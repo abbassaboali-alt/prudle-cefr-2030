@@ -1,0 +1,5752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CEFR-Aligned Placement Diagnostic</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f4f7fb;
+  color:#1f2937;
+}
+
+.container{
+  max-width:950px;
+  margin:auto;
+  padding:25px;
+}
+
+.header{
+  background:#164478;
+  color:white;
+  padding:25px;
+  border-radius:22px;
+  text-align:center;
+  margin-bottom:25px;
+}
+.logo{
+
+  width:140px;
+
+  max-width:90%;
+
+  display:block;
+
+  margin:0 auto 15px;
+
+  background:white;
+
+  padding:10px;
+
+  border-radius:20px;
+
+}
+
+.header h1{
+  margin:0;
+  font-size:30px;
+}
+
+.header p{
+  margin-top:10px;
+  font-size:15px;
+  opacity:.9;
+}
+
+.card{
+  background:white;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:15px;
+  box-shadow:0 4px 14px rgba(0,0,0,.08);
+  border:1px solid #dbeafe;
+}
+
+.level-title{
+  text-align:center;
+  color:#164478;
+  font-size:26px;
+  font-weight:900;
+  margin-bottom:20px;
+}
+
+.type-badge{
+  display:inline-block;
+  background:#eaf2ff;
+  color:#164478;
+  padding:6px 12px;
+  border-radius:20px;
+  font-weight:900;
+  margin-bottom:10px;
+  font-size:13px;
+}
+
+.question{
+  font-size:18px;
+  font-weight:800;
+  line-height:1.6;
+  margin-bottom:14px;
+}
+
+.option{
+  display:block;
+  padding:13px 14px;
+  margin:9px 0;
+  border:2px solid #dbeafe;
+  border-radius:14px;
+  cursor:pointer;
+  transition:.2s;
+  background:#fff;
+}
+
+.option:hover{
+  background:#eef5ff;
+  border-color:#164478;
+}
+
+.option input{
+  margin-right:8px;
+}
+
+.reading{
+  background:#f8fafc;
+  border-left:6px solid #164478;
+  padding:16px;
+  margin:12px 0 18px;
+  line-height:1.8;
+  border-radius:14px;
+  white-space:pre-line;
+  font-size:16px;
+}
+
+.actions{
+  text-align:center;
+  margin:25px 0;
+}
+
+button{
+  background:#164478;
+  color:white;
+  border:0;
+  padding:15px 34px;
+  border-radius:16px;
+  font-size:18px;
+  font-weight:900;
+  cursor:pointer;
+  transition:.2s;
+}
+
+button:hover{
+  background:#0f3158;
+  transform:translateY(-1px);
+}
+
+.result{
+  background:white;
+  border:3px solid #164478;
+  border-radius:24px;
+  padding:30px;
+  text-align:center;
+  margin-top:25px;
+  box-shadow:0 4px 14px rgba(0,0,0,.08);
+}
+
+.final-level{
+  font-size:54px;
+  color:#164478;
+  font-weight:900;
+  margin:20px 0;
+}
+
+.stats{
+  margin-top:20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+}
+
+.stat-box{
+  background:#eef5ff;
+  border-radius:16px;
+  padding:14px;
+  font-weight:900;
+  color:#164478;
+}
+
+.note{
+  background:#fff7ed;
+  border:2px solid #fdba74;
+  padding:15px;
+  border-radius:18px;
+  margin-bottom:20px;
+  color:#9a3412;
+  font-weight:800;
+  text-align:center;
+}
+*{
+  box-sizing:border-box;
+}
+input,
+textarea,
+button{
+
+  width:100%;
+
+  max-width:100%;
+
+  box-sizing:border-box;
+
+}
+@media(max-width:768px){
+
+  .container{
+    padding:12px;
+  }
+
+  .card{
+    padding:16px;
+  }
+
+  .header h1{
+    font-size:22px;
+    line-height:1.3;
+  }
+
+  .logo{
+    width:90px;
+  }
+
+  button{
+    width:100%;
+  }
+
+}
+</style>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+
+  <img
+    src="https://prudle.edu.sa/wp-content/uploads/2020/11/about.png"
+    alt="Prudle Logo"
+    class="logo"
+  >
+
+  <h1>
+    CEFR-Aligned Placement Diagnostic
+  </h1>
+
+  <p>
+    Prudle Language Institute
+  </p>
+
+</div>
+  <div class="note">
+    CEFR-Aligned Placement Diagnostic  </div>
+<div id="studentBox" class="card">
+
+<h2 style="
+text-align:center;
+color:#164478;
+font-size:18px;
+font-weight:700;
+margin-bottom:15px;
+">
+Student Information
+</h2>
+  <input
+    id="studentName"
+    type="text"
+    placeholder="Student Name"
+    style="
+      width:100%;
+      padding:14px;
+      margin-bottom:12px;
+      border:2px solid #dbeafe;
+      border-radius:12px;
+    "
+  >
+
+  <input
+    id="studentPhone"
+    type="tel"
+    placeholder="Mobile Number"
+    style="
+      width:100%;
+      padding:14px;
+      border:2px solid #dbeafe;
+      border-radius:12px;
+    "
+  >
+<input
+  id="studentID"
+  type="text"
+  placeholder="ID / Iqama Number"
+  style="
+    width:100%;
+    padding:14px;
+    margin-top:12px;
+    border:2px solid #dbeafe;
+    border-radius:12px;
+  "
+>
+<br><br>
+
+<button onclick="startTest()">
+  Start Test
+</button>
+
+</div>
+<div
+  id="instructionBox"
+  class="card"
+  style="display:none"
+>
+
+<h2 style="
+text-align:center;
+color:#164478;
+">
+Before You Begin
+</h2>
+
+<div class="reading" style="text-align:center;">
+
+<b>English:</b>
+<br>
+Welcome. Before you begin, please read this carefully. This diagnostic is designed to place you in the right level — the level where you will learn the most and progress the fastest. There are no pass or fail results. Using AI, searching for answers online, or asking for help will only place you in the wrong class. We will discover your real level through your speaking and writing in class. Cheating this diagnostic only cheats yourself. Please answer every question honestly and to the best of your ability. Good luck.
+
+<br><br>
+
+<div style="direction:rtl;text-align:center;">
+<b>Arabic:</b>
+<br>
+مرحباً. قبل أن تبدأ، يُرجى قراءة هذا بعناية. صُمِّم هذا التشخيص لوضعك في المستوى المناسب — المستوى الذي ستتعلم فيه أكثر وتتقدم فيه بشكل أسرع. لا توجد نتائج نجاح أو رسوب. استخدام الذكاء الاصطناعي أو البحث عن الإجابات عبر الإنترنت أو طلب المساعدة سيضعك فقط في الفصل الخطأ. سنكتشف مستواك الحقيقي من خلال التحدث والكتابة في الفصل. الغش في هذا التشخيص هو غش لنفسك فقط. يُرجى الإجابة على كل سؤال بصدق وبأفضل ما لديك. حظاً موفقاً.
+</div>
+</div>
+
+<label class="option">
+  <input
+    type="checkbox"
+    id="instructionCheck"
+    style="width:auto"
+  >
+  I have read and understood the above
+</label>
+
+<br>
+
+<button onclick="continueToTest()">
+  Continue
+</button>
+
+</div>
+  <div
+  id="testBox"
+  style="display:none"
+></div>
+
+<div
+  class="actions"
+  id="submitArea"
+  style="display:none"
+>
+
+  <button
+    id="submitBtn"
+    onclick="submitLevel()"
+  >
+    Submit Level
+  </button>
+
+</div>
+
+<div
+  id="writingBox"
+  class="card"
+  style="display:none"
+>
+
+<h2 style="
+text-align:center;
+color:#164478;
+">
+Writing Assessment
+</h2>
+
+<textarea
+id="writingText"
+placeholder="Write your essay here..."
+spellcheck="false"
+autocorrect="off"
+autocomplete="off"
+autocapitalize="off"
+style="
+width:100%;
+min-height:250px;
+padding:15px;
+border:2px solid #dbeafe;
+border-radius:14px;
+resize:vertical;
+"></textarea>
+<br><br>
+
+<div style="
+text-align:center;
+font-weight:900;
+color:#164478;
+">
+OR UPLOAD FILE
+</div>
+
+<br>
+
+<input
+type="file"
+id="writingFile"
+accept=".txt,.docx,.pdf,image/*"
+>
+
+<br><br>
+
+<button onclick="analyzeWriting()">
+Analyze Writing
+</button>
+
+<div
+id="writingResult"
+style="margin-top:20px"
+></div>
+
+</div>
+<div
+  id="speakingBox"
+  class="card"
+  style="display:none"
+>
+
+<h2 style="
+text-align:center;
+color:#164478;
+">
+Speaking Assessment
+</h2>
+
+<div
+  id="speakingQuestionBox"
+  class="result"
+  style="margin-bottom:20px"
+>
+  <h3>
+    Speaking Question
+  </h3>
+
+  <div
+    id="speakingLevelTitle"
+    class="final-level"
+    style="font-size:34px"
+  >
+    A1
+  </div>
+
+  <p
+    id="speakingQuestionText"
+    style="
+      font-size:22px;
+      font-weight:900;
+      color:#164478;
+      line-height:1.6;
+    "
+  >
+    Click Start Speaking Test
+  </p>
+<button
+  onclick="speakQuestion()"
+  style="
+    margin-top:10px;
+    background:#0ea5e9;
+  "
+>
+  □ Listen to Question
+</button>
+<audio
+  id="questionAudio"
+  controls
+  style="
+    width:100%;
+    margin-top:15px;
+  "
+></audio>
+</div>
+
+<button onclick="startSpeakingTest()">
+Start Speaking Test
+</button>
+
+<button
+  id="recordBtn"
+  onclick="startRecording()"
+  disabled
+>
+Start Recording Answer
+</button>
+<div
+  id="recordTimer"
+  style="
+    display:none;
+    text-align:center;
+    margin-top:12px;
+    font-size:22px;
+    font-weight:900;
+    color:#dc2626;
+  "
+>
+00:00
+</div>
+
+<br><br>
+
+<button onclick="stopRecording()">
+Stop Recording
+</button>
+<br><br>
+
+
+<audio
+  id="audioPreview"
+  controls
+  style="
+    width:100%;
+    display:none;
+  "
+></audio>
+
+<br><br>
+
+<button onclick="analyzeSpeakingAnswer()">
+Analyze This Answer
+</button>
+<br><br>
+
+
+<div
+  id="speakingResult"
+  style="margin-top:20px"
+></div>
+
+</div>
+
+<div id="result"></div>
+<script>
+/* ===========================
+   Firebase
+=========================== */
+firebase.initializeApp({
+  apiKey:"AIzaSyCCFBvZosI8dwShZjxvZzI-SU5igEbcOKk",
+  authDomain:"prudle-system.firebaseapp.com",
+  projectId:"prudle-system"
+});
+
+const db = firebase.firestore();
+function getProgressRef(studentID){
+  return db.collection("cefr_progress").doc(studentID);
+}
+
+async function saveProgress(extraData = {}){
+  const studentID = document.getElementById("studentID").value.trim();
+
+  if(!studentID){
+    return;
+  }
+
+await getProgressRef(studentID).set({
+  studentID,
+
+  name:
+    document.getElementById("studentName").value.trim(),
+
+  phone:
+    document.getElementById("studentPhone").value.trim(),
+
+  currentLevelIndex,
+  currentSectionIndex,
+  answers,
+  finalStats,
+  preparedLevels,
+  currentPlacementLevel,
+  writingScore,
+  writingLevel,
+  speakingLevel,
+  speakingResults,
+  currentSpeakingIndex,
+  updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  ...extraData
+}, { merge:true });
+
+}
+async function loadProgress(studentID){
+  const doc = await getProgressRef(studentID).get();
+
+  if(!doc.exists){
+    return null;
+  }
+
+  return doc.data();
+}
+
+async function clearProgress(studentID){
+  await getProgressRef(studentID).delete();
+}
+/* ==============================
+   CEFR RULES
+============================== */
+
+const LEVELS = ["A1","A2","B1","B2","C1","C2"];
+
+
+let currentLevelIndex = 0;
+let answers = {};
+let finalStats = {};
+let currentLevelQuestions = [];
+let currentSectionIndex = 0;
+let preparedLevels = {};
+
+const SECTIONS = [
+  "Grammar",
+  "Vocabulary",
+  "Listening",
+  "Reading"
+];
+let writingScore = 0;
+let writingLevel = "";
+let currentPlacementLevel = "";
+let speakingLevel = "";
+let speakingTranscript = "";
+let speakingAudioBase64 = "";
+let speakingFluency = 0;
+let speakingGrammar = 0;
+let speakingVocabulary = 0;
+let speakingPronunciation = 0;
+let speakingFeedback = "";
+
+let mediaRecorder;
+let audioChunks = [];
+let currentSpeakingIndex = 0;
+
+let currentSpeakingQuestion = "";
+
+let speakingResults = [];
+let speakingAudios = [];
+let currentAudioBlob = null;
+let recognition;
+let currentTranscript = "";
+ 
+let recordingTimerInterval = null;
+let recordingSeconds = 0;
+const SPEAKING_LEVELS = [
+  "A1",
+  "A2",
+  "B1",
+  "B2",
+  "C1",
+  "C2"
+];
+const WRITING_TOPICS = {
+
+  A1:
+    "Write 3 sentences about your family. How many people are in your family and what are their names?",
+
+  A2:
+    "Write a short message to a friend (4–6 sentences) about something you did last weekend.",
+
+  B1:
+    "Write an email to your teacher (8–10 sentences) explaining why you missed a class and asking what you missed.",
+
+  B2:
+    "Write a short essay (10–12 sentences) about a person who has influenced your life and why.",
+
+  C1:
+    "Write a letter (12–15 sentences) to a school principal suggesting an improvement to the school and explaining why it would benefit students.",
+
+  C2:
+    "Write a formal essay (15–18 sentences) discussing whether social media has a positive or negative effect on young people today."
+
+};
+
+const FALLBACK_SPEAKING_QUESTIONS = {
+
+  A1:[
+"Tell me your name, your age, and one thing you like to do."  ],
+
+  A2:[
+"Describe your home or your school. And what does it look like?"  ],
+
+  B1:[
+"Talk about your favorite hobby or activity. And why do you enjoy it?"  ],
+
+  B2:[
+"Describe a memorable experience from your life. What happened and how did it affect you?"  ],
+
+  C1:[
+"What do you think is the biggest challenge facing young people today? Give reasons and examples."  ],
+
+  C2:[
+"Discuss how technology has changed the way young people communicate. What are the benefits and drawbacks?"  ]
+
+};
+const SPEAKING_AUDIO = {
+
+  "Tell me your name, your age, and one thing you like to do.":
+    "https://audio.jukehost.co.uk/019ed1ae-e1e0-7177-8ef9-5ad0416b5476",
+
+  "Describe your home or your school. And what does it look like?":
+    "https://audio.jukehost.co.uk/019ed1ba-49dd-72f6-8552-3add7be94c1e",
+
+  "Talk about your favorite hobby or activity. And why do you enjoy it?":
+    "https://audio.jukehost.co.uk/019ed1bb-47b1-722c-8e3e-0c2c44faa5ee",
+
+  "Describe a memorable experience from your life. What happened and how did it affect you?":
+    "https://audio.jukehost.co.uk/019ed1bc-8d44-717f-aed6-c2cb16f5bcf0",
+
+  "What do you think is the biggest challenge facing young people today? Give reasons and examples.":
+    "https://audio.jukehost.co.uk/019ed1bd-9223-73f8-8500-a8d5485ab38a",
+
+  "Discuss how technology has changed the way young people communicate. What are the benefits and drawbacks?":
+    "https://audio.jukehost.co.uk/019ed1be-ae9d-72bd-95b8-68217819a4d8"
+
+};
+/* ==============================
+   SHUFFLE FUNCTION
+   يخلط الأسئلة والاختيارات
+============================== */
+
+function shuffleArray(arr){
+  const copy = [...arr];
+
+  for(let i = copy.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+
+  return copy;
+}
+
+/* ==============================
+   PREPARE QUESTION OPTIONS
+   يخلط الاختيارات ويحافظ على الإجابة الصحيحة
+============================== */
+
+function prepareQuestion(q){
+  const optionsWithIndex =
+    q.o.map((text,index)=>({
+      text,
+      originalIndex:index
+    }));
+
+  const shuffledOptions =
+    shuffleArray(optionsWithIndex);
+
+  const newAnswerIndex =
+    shuffledOptions.findIndex(
+      op => op.originalIndex === q.a
+    );
+
+  return {
+    ...q,
+    shuffledOptions,
+    newAnswerIndex
+  };
+}
+
+/* ==============================
+   QUESTIONS ARRAY
+   الجزء الثاني سيبدأ من هنا
+============================== */
+
+const questions = [
+
+/* ==============================
+   A1 QUESTIONS
+============================== */
+
+{
+level:"A1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed19e-d591-7094-ac83-5ece59931c69",
+
+q:"When is the room ready?",
+
+o:[
+"From 10:00 in the morning",
+"From 2:00 in the afternoon",
+"From 12:00 at night"
+],
+
+a:1
+},
+
+{
+level:"A1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed19e-d591-7094-ac83-5ece59931c69",
+
+q:"Where is breakfast?",
+
+o:[
+"In the lobby",
+"On the first floor restaurant",
+"In the room"
+],
+
+a:1
+},
+
+{
+level:"A1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed19e-d591-7094-ac83-5ece59931c69",
+
+q:"How can the guest ask for a taxi?",
+
+o:[
+"Send an email",
+"Call from the room phone",
+"Go to the parking lot"
+],
+
+a:1
+},
+
+{
+level:"A1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed19e-d591-7094-ac83-5ece59931c69",
+
+q:"What time is check-out?",
+
+o:[
+"12:00 tomorrow",
+"10:00 tonight",
+"7:00 tomorrow"
+],
+
+a:0
+},
+{
+level:"A1",
+type:"Grammar",
+q:"I __ a student.",
+
+o:[
+"am",
+"is",
+"be"
+],
+
+a:0
+},
+
+{
+level:"A1",
+type:"Grammar",
+q:"She __ in a small town.",
+
+o:[
+"live",
+"lives",
+"living"
+],
+
+a:1
+},
+
+{
+level:"A1",
+type:"Grammar",
+q:"We __ coffee every morning.",
+
+o:[
+"drink",
+"drinks",
+"drinking"
+],
+
+a:0
+},
+
+{
+level:"A1",
+type:"Grammar",
+q:"__ you from Riyadh?",
+
+o:[
+"Do",
+"Are",
+"Is"
+],
+
+a:1
+},
+
+{
+level:"A1",
+type:"Grammar",
+q:"They __ at home on weekends.",
+
+o:[
+"are stay",
+"stays",
+"stay"
+],
+
+a:2
+},
+
+{
+level:"A1",
+type:"Grammar",
+q:"Where __ your brother work?",
+
+o:[
+"do",
+"does",
+"is"
+],
+
+a:1
+},
+
+{
+level:"A1",
+type:"Vocabulary",
+q:"I need a __ to open the door because it is locked.",
+
+o:[
+"key",
+"ticket",
+"card"
+],
+
+a:0
+},
+
+{
+level:"A1",
+type:"Vocabulary",
+q:"It’s very hot today, so please open the __.",
+
+o:[
+"floor",
+"window",
+"picture"
+],
+
+a:1
+},
+
+{
+level:"A1",
+type:"Vocabulary",
+q:"My bus comes at 7:30, so I wait at the __.",
+
+o:[
+"station",
+"kitchen",
+"garden"
+],
+
+a:0
+},
+
+{
+level:"A1",
+type:"Vocabulary",
+q:"I can’t talk now; I’m in a __ with my manager.",
+
+o:[
+"meeting",
+"holiday",
+"exercise"
+],
+
+a:0
+},
+
+{
+level:"A1",
+type:"Vocabulary",
+q:"Please write your phone number on this __.",
+
+o:[
+"paper",
+"clock",
+"plate"
+],
+
+a:0
+},
+
+{
+level:"A1",
+type:"Reading",
+
+text:`Maria is from Brazil, but she lives in Jeddah now. She works in a small café near her apartment. She starts work at 8:00 in the morning and finishes at 4:00 in the afternoon. On weekends, Maria likes to go to the beach with her friends. She is learning Arabic and practices a little every day.`,
+
+q:"Where does Maria live now?",
+
+o:[
+"Brazil",
+"Jeddah",
+"A small café"
+],
+
+a:1
+},
+
+{
+level:"A1",
+type:"Reading",
+
+text:`Maria is from Brazil, but she lives in Jeddah now. She works in a small café near her apartment. She starts work at 8:00 in the morning and finishes at 4:00 in the afternoon. On weekends, Maria likes to go to the beach with her friends. She is learning Arabic and practices a little every day.`,
+
+q:"What time does Maria start work?",
+
+o:[
+"4:00",
+"8:00",
+"9:00"
+],
+
+a:1
+},
+
+{
+level:"A1",
+type:"Reading",
+
+text:`Maria is from Brazil, but she lives in Jeddah now. She works in a small café near her apartment. She starts work at 8:00 in the morning and finishes at 4:00 in the afternoon. On weekends, Maria likes to go to the beach with her friends. She is learning Arabic and practices a little every day.`,
+
+q:"Where does Maria work?",
+
+o:[
+"In a supermarket",
+"In a small café",
+"In a school"
+],
+
+a:1
+},
+
+{
+level:"A1",
+type:"Reading",
+
+text:`Maria is from Brazil, but she lives in Jeddah now. She works in a small café near her apartment. She starts work at 8:00 in the morning and finishes at 4:00 in the afternoon. On weekends, Maria likes to go to the beach with her friends. She is learning Arabic and practices a little every day.`,
+
+q:"What does Maria like to do on weekends?",
+
+o:[
+"Study at home",
+"Visit her family in Brazil",
+"Go to the beach with friends"
+],
+
+a:2
+},
+
+{
+level:"A1",
+type:"Reading",
+
+text:`Maria is from Brazil, but she lives in Jeddah now. She works in a small café near her apartment. She starts work at 8:00 in the morning and finishes at 4:00 in the afternoon. On weekends, Maria likes to go to the beach with her friends. She is learning Arabic and practices a little every day.`,
+
+q:"What language is Maria learning?",
+
+o:[
+"Arabic",
+"English",
+"Portuguese"
+],
+
+a:0
+},
+/* ==============================
+   A2 QUESTIONS
+============================== */
+
+{
+level:"A2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a1-c300-72c8-a4d8-a66ddcf48400",
+
+q:"Until what day is the book ready for pickup?",
+
+o:[
+"Monday",
+"Friday",
+"Sunday"
+],
+
+a:1
+},
+
+{
+level:"A2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a1-c300-72c8-a4d8-a66ddcf48400",
+
+q:"What should the person bring to the library?",
+
+o:[
+"A passport",
+"A library card",
+"A receipt"
+],
+
+a:1
+},
+
+{
+level:"A2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a1-c300-72c8-a4d8-a66ddcf48400",
+
+q:"What are the library's opening hours?",
+
+o:[
+"9 a.m. to 6 p.m.",
+"6 a.m. to 9 p.m.",
+"10 a.m. to 5 p.m."
+],
+
+a:0
+},
+
+{
+level:"A2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a1-c300-72c8-a4d8-a66ddcf48400",
+
+q:"What can the person do if they cannot come this week?",
+
+o:[
+"Order delivery of the book",
+"Extend the reservation by calling",
+"Ask a friend to collect without ID"
+],
+
+a:1
+},
+
+{
+level:"A2",
+type:"Grammar",
+q:"Please be quiet. I ____ to the teacher now.",
+
+o:[
+"talk",
+"am talking",
+"talked"
+],
+
+a:1
+},
+
+{
+level:"A2",
+type:"Grammar",
+q:"We ____ a great movie last night.",
+
+o:[
+"watch",
+"are watching",
+"watched"
+],
+
+a:2
+},
+
+{
+level:"A2",
+type:"Grammar",
+q:"My new phone is ____ than my old one.",
+
+o:[
+"expensiver",
+"more expensive",
+"most expensive"
+],
+
+a:1
+},
+
+{
+level:"A2",
+type:"Grammar",
+q:"____ you going to the gym this evening?",
+
+o:[
+"Are",
+"Do",
+"Did"
+],
+
+a:0
+},
+
+{
+level:"A2",
+type:"Grammar",
+q:"When ____ you arrive at the airport?",
+
+o:[
+"do",
+"did",
+"are"
+],
+
+a:1
+},
+
+{
+level:"A2",
+type:"Grammar",
+q:"This street is ____ than that one, so it’s safer for children.",
+
+o:[
+"quiet",
+"more quiet",
+"quieter"
+],
+
+a:2
+},
+
+{
+level:"A2",
+type:"Vocabulary",
+q:"I missed the bus, so I will ____ a taxi to work.",
+
+o:[
+"catch",
+"drive",
+"borrow"
+],
+
+a:0
+},
+
+{
+level:"A2",
+type:"Vocabulary",
+q:"The restaurant is busy. We should ____ a table before we go.",
+
+o:[
+"book",
+"build",
+"paint"
+],
+
+a:0
+},
+
+{
+level:"A2",
+type:"Vocabulary",
+q:"I can’t hear you well. The internet ____ is very weak today.",
+
+o:[
+"password",
+"signal",
+"screen"
+],
+
+a:1
+},
+
+{
+level:"A2",
+type:"Vocabulary",
+q:"Please keep your receipt in case you want to ____ the jacket.",
+
+o:[
+"return",
+"repeat",
+"repair"
+],
+
+a:0
+},
+
+{
+level:"A2",
+type:"Vocabulary",
+q:"I usually eat a light ____ and then start work at 9.",
+
+o:[
+"ticket",
+"breakfast",
+"message"
+],
+
+a:1
+},
+
+{
+level:"A2",
+type:"Reading",
+
+text:`Omar recently moved to a new apartment closer to his job. Before, his commute took almost an hour by bus, but now he can walk to the office in fifteen minutes. The area has a small park, a supermarket, and a café where he sometimes meets his colleagues after work. He is saving money because the rent is a little higher, but he spends less on transportation. On weekends, Omar visits his parents and helps them with errands.`,
+
+q:"How long does Omar’s walk to the office take now?",
+
+o:[
+"About 15 minutes",
+"Almost one hour",
+"About 30 minutes"
+],
+
+a:0
+},
+
+{
+level:"A2",
+type:"Reading",
+
+text:`Omar recently moved to a new apartment closer to his job. Before, his commute took almost an hour by bus, but now he can walk to the office in fifteen minutes. The area has a small park, a supermarket, and a café where he sometimes meets his colleagues after work. He is saving money because the rent is a little higher, but he spends less on transportation. On weekends, Omar visits his parents and helps them with errands.`,
+
+q:"What places are near Omar’s new apartment?",
+
+o:[
+"A stadium and a hospital",
+"A park, a supermarket, and a café",
+"A school and a library"
+],
+
+a:1
+},
+
+{
+level:"A2",
+type:"Reading",
+
+text:`Omar recently moved to a new apartment closer to his job. Before, his commute took almost an hour by bus, but now he can walk to the office in fifteen minutes. The area has a small park, a supermarket, and a café where he sometimes meets his colleagues after work. He is saving money because the rent is a little higher, but he spends less on transportation. On weekends, Omar visits his parents and helps them with errands.`,
+
+q:"Why is Omar saving money?",
+
+o:[
+"He lost his job",
+"The rent is a little higher",
+"He wants to buy a car"
+],
+
+a:1
+},
+
+{
+level:"A2",
+type:"Reading",
+
+text:`Omar recently moved to a new apartment closer to his job. Before, his commute took almost an hour by bus, but now he can walk to the office in fifteen minutes. The area has a small park, a supermarket, and a café where he sometimes meets his colleagues after work. He is saving money because the rent is a little higher, but he spends less on transportation. On weekends, Omar visits his parents and helps them with errands.`,
+
+q:"How did Omar go to work before moving?",
+
+o:[
+"By car",
+"On foot",
+"By bus"
+],
+
+a:2
+},
+
+{
+level:"A2",
+type:"Reading",
+
+text:`Omar recently moved to a new apartment closer to his job. Before, his commute took almost an hour by bus, but now he can walk to the office in fifteen minutes. The area has a small park, a supermarket, and a café where he sometimes meets his colleagues after work. He is saving money because the rent is a little higher, but he spends less on transportation. On weekends, Omar visits his parents and helps them with errands.`,
+
+q:"What does Omar do on weekends?",
+
+o:[
+"Works overtime at the office",
+"Visits his parents and helps with errands",
+"Travels to different cities"
+],
+
+a:1
+},
+/* ==============================
+   B1 QUESTIONS
+============================== */
+
+{
+level:"B1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a2-ff10-7375-a05f-d15296ee37e8",
+
+q:"Where will the group meet?",
+
+o:[
+"West gate of Riverside Park",
+"East entrance of Riverside Park",
+"Parking lot behind the library"
+],
+
+a:1
+},
+
+{
+level:"B1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a2-ff10-7375-a05f-d15296ee37e8",
+
+q:"What should participants bring themselves?",
+
+o:[
+"Trash bags",
+"Reusable water bottles",
+"Gloves"
+],
+
+a:1
+},
+
+{
+level:"B1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a2-ff10-7375-a05f-d15296ee37e8",
+
+q:"When is the activity expected to end?",
+
+o:[
+"10 a.m.",
+"Noon",
+"3 p.m."
+],
+
+a:1
+},
+
+{
+level:"B1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a2-ff10-7375-a05f-d15296ee37e8",
+
+q:"What will happen if there is heavy rain?",
+
+o:[
+"The event will move indoors",
+"It will be postponed to next Saturday",
+"It will continue with umbrellas"
+],
+
+a:1
+},
+
+{
+level:"B1",
+type:"Grammar",
+
+q:"I couldn’t answer your call because I ____ dinner when you rang.",
+
+o:[
+"cooked",
+"was cooking",
+"have cooked"
+],
+
+a:1
+},
+
+{
+level:"B1",
+type:"Grammar",
+
+q:"She ____ in three different countries, so she’s used to moving.",
+
+o:[
+"lived",
+"has lived",
+"was living"
+],
+
+a:1
+},
+
+{
+level:"B1",
+type:"Grammar",
+
+q:"If it rains this evening, we ____ the match.",
+
+o:[
+"cancel",
+"will cancel",
+"would cancel"
+],
+
+a:1
+},
+
+{
+level:"B1",
+type:"Grammar",
+
+q:"If I ____ more free time, I would learn to play the piano.",
+
+o:[
+"have",
+"will have",
+"had"
+],
+
+a:2
+},
+
+{
+level:"B1",
+type:"Grammar",
+
+q:"'I’m feeling a bit tired,' he said. He said that he ____ a bit tired.",
+
+o:[
+"is feeling",
+"was feeling",
+"had felt"
+],
+
+a:1
+},
+
+{
+level:"B1",
+type:"Grammar",
+
+q:"They ____ when the lights went out, so they used their phones.",
+
+o:[
+"talked",
+"have talked",
+"were talking"
+],
+
+a:2
+},
+
+{
+level:"B1",
+type:"Vocabulary",
+
+q:"The manager asked me to ____ the report before the meeting to check for mistakes.",
+
+o:[
+"review",
+"remove",
+"renew"
+],
+
+a:0
+},
+
+{
+level:"B1",
+type:"Vocabulary",
+
+q:"We chose that hotel because it’s in a very ____ location, close to the metro.",
+
+o:[
+"convenient",
+"confident",
+"consistent"
+],
+
+a:0
+},
+
+{
+level:"B1",
+type:"Vocabulary",
+
+q:"Please keep your receipt as ____ of purchase in case you need a refund.",
+
+o:[
+"proof",
+"price",
+"print"
+],
+
+a:0
+},
+
+{
+level:"B1",
+type:"Vocabulary",
+
+q:"The company will ____ the new app next month after final tests.",
+
+o:[
+"launch",
+"lend",
+"learn"
+],
+
+a:0
+},
+
+{
+level:"B1",
+type:"Vocabulary",
+
+q:"I can’t meet at 5 because I have a prior ____ with my dentist.",
+
+o:[
+"appointment",
+"application",
+"announcement"
+],
+
+a:0
+},
+
+{
+level:"B1",
+type:"Reading",
+
+text:`After the city introduced a weekly car-free evening in the center, local cafés reported higher foot traffic and longer stays. Families said they felt safer letting children play near the fountain, and street musicians started performing more regularly. However, some shop owners noticed fewer purchases of heavy items, like large bags of groceries, on those nights. The council plans to collect feedback for two months before deciding whether to extend the scheme.`,
+
+q:"Which businesses saw more visitors during the car-free evening?",
+
+o:[
+"Local cafés",
+"Furniture stores",
+"Supermarkets on the edge of town"
+],
+
+a:0
+},
+
+{
+level:"B1",
+type:"Reading",
+
+text:`After the city introduced a weekly car-free evening in the center, local cafés reported higher foot traffic and longer stays. Families said they felt safer letting children play near the fountain, and street musicians started performing more regularly. However, some shop owners noticed fewer purchases of heavy items, like large bags of groceries, on those nights. The council plans to collect feedback for two months before deciding whether to extend the scheme.`,
+
+q:"Why might sales of heavy items decrease on car-free nights?",
+
+o:[
+"People avoid carrying bulky goods without cars",
+"Shops close earlier than usual on those nights",
+"Prices for heavy goods rise in the evening"
+],
+
+a:0
+},
+
+{
+level:"B1",
+type:"Reading",
+
+text:`After the city introduced a weekly car-free evening in the center, local cafés reported higher foot traffic and longer stays. Families said they felt safer letting children play near the fountain, and street musicians started performing more regularly. However, some shop owners noticed fewer purchases of heavy items, like large bags of groceries, on those nights. The council plans to collect feedback for two months before deciding whether to extend the scheme.`,
+
+q:"What is the council’s next step?",
+
+o:[
+"Gather public feedback for a limited period",
+"Cancel the scheme immediately",
+"Make the scheme permanent this week"
+],
+
+a:0
+},
+
+{
+level:"B1",
+type:"Reading",
+
+text:`After the city introduced a weekly car-free evening in the center, local cafés reported higher foot traffic and longer stays. Families said they felt safer letting children play near the fountain, and street musicians started performing more regularly. However, some shop owners noticed fewer purchases of heavy items, like large bags of groceries, on those nights. The council plans to collect feedback for two months before deciding whether to extend the scheme.`,
+
+q:"Which group seems to benefit from the car-free evenings?",
+
+o:[
+"Families with children",
+"Long-distance truck drivers",
+"Night-shift factory workers"
+],
+
+a:0
+},
+
+{
+level:"B1",
+type:"Reading",
+
+text:`After the city introduced a weekly car-free evening in the center, local cafés reported higher foot traffic and longer stays. Families said they felt safer letting children play near the fountain, and street musicians started performing more regularly. However, some shop owners noticed fewer purchases of heavy items, like large bags of groceries, on those nights. The council plans to collect feedback for two months before deciding whether to extend the scheme.`,
+
+q:"What does the passage suggest about street culture in the center?",
+
+o:[
+"Live performances have become more frequent",
+"Noise complaints have stopped entirely",
+"Licensed concerts are now mandatory"
+],
+
+a:0
+},
+/* ==============================
+   B2 QUESTIONS
+============================== */
+
+{
+level:"B2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed19d-9a41-7220-882a-e6c33c2da2e7",
+
+q:"What will be discussed after the overview?",
+
+o:[
+"A case study on workflow types",
+"Detailed budgeting for software tools",
+"An interview with a guest CEO"
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed19d-9a41-7220-882a-e6c33c2da2e7",
+
+q:"How can participants ask questions?",
+
+o:[
+"By unmuting microphones",
+"Through the Q&A panel",
+"Only via email after the session"
+],
+
+a:1
+},
+
+{
+level:"B2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed19d-9a41-7220-882a-e6c33c2da2e7",
+
+q:"When should attendees expect the slide deck?",
+
+o:[
+"Immediately after the webinar ends",
+"Within 24 hours",
+"Next week after review"
+],
+
+a:1
+},
+
+{
+level:"B2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed19d-9a41-7220-882a-e6c33c2da2e7",
+
+q:"What is one suggested fix for audio problems?",
+
+o:[
+"Disable the camera permanently",
+"Reconnect or use the dial-in number",
+"Clear browser cookies only"
+],
+
+a:1
+},
+
+{
+level:"B2",
+type:"Grammar",
+
+q:"If she ____ the deadline, she would have lost the contract.",
+
+o:[
+"hadn't met",
+"didn't meet",
+"wouldn't meet"
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Grammar",
+
+q:"The report ____ before the meeting, so the team could review it.",
+
+o:[
+"had been sent",
+"has sent",
+"was sending"
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Grammar",
+
+q:"Rarely ____ such a convincing argument presented to the board.",
+
+o:[
+"has we heard",
+"have we heard",
+"we have heard"
+],
+
+a:1
+},
+
+{
+level:"B2",
+type:"Grammar",
+
+q:"You ____ told me earlier; I could have arranged transport.",
+
+o:[
+"should have",
+"might have to",
+"must have to"
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Grammar",
+
+q:"Not until the audit ended ____ the accounting error.",
+
+o:[
+"the team discovered",
+"did the team discover",
+"had the team discovered"
+],
+
+a:1
+},
+
+{
+level:"B2",
+type:"Grammar",
+
+q:"If the weather ____ better, we wouldn’t have canceled the outdoor event.",
+
+o:[
+"had been",
+"was",
+"would have been"
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Vocabulary",
+
+q:"The researcher attempted to ____ the data to identify hidden patterns.",
+
+o:[
+"synthesize",
+"sanitize",
+"summarize"
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Vocabulary",
+
+q:"The policy change had an ____ impact on small businesses, increasing costs unexpectedly.",
+
+o:[
+"adverse",
+"inverse",
+"diverse"
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Vocabulary",
+
+q:"Before adoption, the proposal must undergo a thorough ____ by an independent committee.",
+
+o:[
+"appraisal",
+"approval",
+"appeal"
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Vocabulary",
+
+q:"The CEO’s statement helped to ____ concerns among investors after the setback.",
+
+o:[
+"alleviate",
+"alienate",
+"elevate"
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Vocabulary",
+
+q:"The team outlined a ____ plan to implement the new system over three phases.",
+
+o:[
+"coherent",
+"inherent",
+"adherent"
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Reading",
+
+text:`Several city councils have promoted urban community gardens as a remedy for food insecurity and neighborhood fragmentation. Proponents argue that shared plots cultivate not only vegetables but also social ties, citing modest declines in reported isolation among participants. Critics, however, warn that without long-term funding and accessible locations, such projects risk becoming symbolic gestures, flourishing briefly before being repurposed for commercial development. Early evaluations indicate mixed outcomes: while some districts report improved access to fresh produce, others note that participation skews toward residents with flexible schedules, leaving shift workers underrepresented.`,
+
+q:"Which concern do critics primarily raise about community gardens?",
+
+o:[
+"They may lack durability and equitable access.",
+"They inevitably increase food prices citywide.",
+"They require advanced agricultural training."
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Reading",
+
+text:`Several city councils have promoted urban community gardens as a remedy for food insecurity and neighborhood fragmentation. Proponents argue that shared plots cultivate not only vegetables but also social ties, citing modest declines in reported isolation among participants. Critics, however, warn that without long-term funding and accessible locations, such projects risk becoming symbolic gestures, flourishing briefly before being repurposed for commercial development. Early evaluations indicate mixed outcomes: while some districts report improved access to fresh produce, others note that participation skews toward residents with flexible schedules, leaving shift workers underrepresented.`,
+
+q:"What does the passage imply about participation demographics?",
+
+o:[
+"Time constraints limit involvement for certain workers.",
+"Interest is uniformly high across all resident groups.",
+"Older residents are explicitly barred from joining."
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Reading",
+
+text:`Several city councils have promoted urban community gardens as a remedy for food insecurity and neighborhood fragmentation. Proponents argue that shared plots cultivate not only vegetables but also social ties, citing modest declines in reported isolation among participants. Critics, however, warn that without long-term funding and accessible locations, such projects risk becoming symbolic gestures, flourishing briefly before being repurposed for commercial development. Early evaluations indicate mixed outcomes: while some districts report improved access to fresh produce, others note that participation skews toward residents with flexible schedules, leaving shift workers underrepresented.`,
+
+q:"Which statement best captures the author's stance?",
+
+o:[
+"Cautiously balanced, acknowledging benefits and limitations.",
+"Strongly dismissive, rejecting gardens as ineffective.",
+"Unreservedly supportive, ignoring implementation issues."
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Reading",
+
+text:`Several city councils have promoted urban community gardens as a remedy for food insecurity and neighborhood fragmentation. Proponents argue that shared plots cultivate not only vegetables but also social ties, citing modest declines in reported isolation among participants. Critics, however, warn that without long-term funding and accessible locations, such projects risk becoming symbolic gestures, flourishing briefly before being repurposed for commercial development. Early evaluations indicate mixed outcomes: while some districts report improved access to fresh produce, others note that participation skews toward residents with flexible schedules, leaving shift workers underrepresented.`,
+
+q:"What risk is suggested regarding project sites?",
+
+o:[
+"They could be replaced by commercial uses over time.",
+"They might contaminate nearby soil.",
+"They will violate zoning laws immediately."
+],
+
+a:0
+},
+
+{
+level:"B2",
+type:"Reading",
+
+text:`Several city councils have promoted urban community gardens as a remedy for food insecurity and neighborhood fragmentation. Proponents argue that shared plots cultivate not only vegetables but also social ties, citing modest declines in reported isolation among participants. Critics, however, warn that without long-term funding and accessible locations, such projects risk becoming symbolic gestures, flourishing briefly before being repurposed for commercial development. Early evaluations indicate mixed outcomes: while some districts report improved access to fresh produce, others note that participation skews toward residents with flexible schedules, leaving shift workers underrepresented.`,
+
+q:"Which outcome is explicitly reported as inconsistent across districts?",
+
+o:[
+"Improvements in access to fresh produce.",
+"Universal declines in food insecurity.",
+"Complete elimination of isolation."
+],
+
+a:0
+},
+/* ==============================
+   C1 QUESTIONS
+============================== */
+
+{
+level:"C1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a6-188f-7289-bac5-fab560646472",
+
+q:"What is the lecturer’s central claim about why identical reforms yield different results?",
+
+o:[
+"Contextual implementation factors, not the reform design itself, primarily drive divergent outcomes",
+"Teacher resistance is the only meaningful barrier to reform success across districts",
+"Higher funding automatically ensures better results regardless of conditions"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a6-188f-7289-bac5-fab560646472",
+
+q:"Which metric practice does the lecturer imply could unintentionally distort behavior?",
+
+o:[
+"Public dashboards emphasizing rapid progress over depth of learning",
+"Private notes taken by instructional coaches during observations",
+"Annual community surveys about school climate"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a6-188f-7289-bac5-fab560646472",
+
+q:"What organizational pattern is suggested to undermine sustained adoption of the literacy framework?",
+
+o:[
+"Frequent turnover of school principals leading to initiative fatigue among teachers",
+"Overreliance on peer observation without any formal feedback",
+"Decentralized budgeting that grants schools spending autonomy"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a6-188f-7289-bac5-fab560646472",
+
+q:"Which synthesis best captures the lecturer’s stance on policy versus practice?",
+
+o:[
+"Policy provides direction, but disciplined routines and protective structures convert intent into durable learning",
+"Strong policy alone is sufficient if accompanied by detailed press releases",
+"Practice matters only after districts reach a threshold of per-pupil funding"
+],
+
+a:0
+},
+{
+level:"C1",
+type:"Grammar",
+
+q:"Rarely ____ such a nuanced critique receive unanimous praise from the panel.",
+
+o:[
+"has",
+"does",
+"would"
+],
+
+a:1
+},
+
+{
+level:"C1",
+type:"Grammar",
+
+q:"It is essential that the report ____ submitted by Friday without exception.",
+
+o:[
+"is",
+"be",
+"being"
+],
+
+a:1
+},
+
+{
+level:"C1",
+type:"Grammar",
+
+q:"Only after the figures were audited ____ the discrepancy become apparent.",
+
+o:[
+"did",
+"had",
+"was"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Grammar",
+
+q:"What ____ was the team’s willingness to revise the proposal overnight.",
+
+o:[
+"it emphasized",
+"emphasized it",
+"was emphasized"
+],
+
+a:2
+},
+
+{
+level:"C1",
+type:"Grammar",
+
+q:"It was the unexpected volatility in raw-material prices ____ derailed the timeline.",
+
+o:[
+"that",
+"which it",
+"what"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Grammar",
+
+q:"The policy is believed ____ adverse effects on smaller vendors.",
+
+o:[
+"to have had",
+"to be having had",
+"to had"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Vocabulary",
+
+q:"Following the data breach, the spokesperson issued a statement to ____ stakeholder concerns while the investigation proceeded.",
+
+o:[
+"placate",
+"elucidate",
+"exacerbate"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Vocabulary",
+
+q:"The committee deemed the evidence ____; consequently, the recommendation was postponed pending further trials.",
+
+o:[
+"compelling",
+"inconclusive",
+"superfluous"
+],
+
+a:1
+},
+
+{
+level:"C1",
+type:"Vocabulary",
+
+q:"While the prototype is functional, its interface appears ____ for non-technical users, potentially discouraging adoption.",
+
+o:[
+"austere",
+"intuitive",
+"ostentatious"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Vocabulary",
+
+q:"The CEO’s remarks were widely criticized as ____ rather than apologetic, further damaging public trust.",
+
+o:[
+"conciliatory",
+"deflective",
+"effusive"
+],
+
+a:1
+},
+
+{
+level:"C1",
+type:"Vocabulary",
+
+q:"The revised contract includes a ____ clause to ensure that disputes are resolved privately and efficiently.",
+
+o:[
+"remediation",
+"confidentiality",
+"contingency"
+],
+
+a:1
+},
+
+{
+level:"C1",
+type:"Reading",
+
+text:`In the past year, the museum’s leadership has touted its expanded digital outreach as evidence of renewed relevance. Livestreamed talks routinely draw hundreds, and a recent virtual exhibition was praised for its accessibility. Yet docents report thinner crowds on weekday afternoons, and a long-planned renovation of the sculpture wing has been delayed twice, officially for "supply-chain" reasons. While the director insists that hybrid programming "meets audiences where they are," internal memos prioritize sponsorship metrics over plans to rebuild school partnerships suspended during the shutdowns. For now, the institution appears buoyed by online enthusiasm, though its footing with local communities seems less certain.`,
+
+q:"What tension is implied between public messaging and internal priorities?",
+
+o:[
+"External claims of community focus contrast with an internal tilt toward sponsorship outcomes",
+"Both public and internal communications uniformly prioritize school partnerships",
+"Internal documents emphasize attendance growth more than funding"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Reading",
+
+text:`In the past year, the museum’s leadership has touted its expanded digital outreach as evidence of renewed relevance. Livestreamed talks routinely draw hundreds, and a recent virtual exhibition was praised for its accessibility. Yet docents report thinner crowds on weekday afternoons, and a long-planned renovation of the sculpture wing has been delayed twice, officially for "supply-chain" reasons. While the director insists that hybrid programming "meets audiences where they are," internal memos prioritize sponsorship metrics over plans to rebuild school partnerships suspended during the shutdowns. For now, the institution appears buoyed by online enthusiasm, though its footing with local communities seems less certain.`,
+
+q:"What is the most plausible reading of the renovation delays?",
+
+o:[
+"They likely reflect pressures beyond mere logistics, such as funding or strategic deprioritization",
+"They are purely the result of increased visitor traffic overwhelming staff",
+"They signal the museum’s permanent shift away from physical exhibitions"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Reading",
+
+text:`In the past year, the museum’s leadership has touted its expanded digital outreach as evidence of renewed relevance. Livestreamed talks routinely draw hundreds, and a recent virtual exhibition was praised for its accessibility. Yet docents report thinner crowds on weekday afternoons, and a long-planned renovation of the sculpture wing has been delayed twice, officially for "supply-chain" reasons. While the director insists that hybrid programming "meets audiences where they are," internal memos prioritize sponsorship metrics over plans to rebuild school partnerships suspended during the shutdowns. For now, the institution appears buoyed by online enthusiasm, though its footing with local communities seems less certain.`,
+
+q:"Which statement best evaluates the director’s hybrid programming claim?",
+
+o:[
+"It is partly supported by online engagement, but does not address weakened ties with local groups",
+"It is conclusively proven by the success of a single virtual exhibition",
+"It is contradicted by all available indicators, including livestream attendance"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Reading",
+
+text:`In the past year, the museum’s leadership has touted its expanded digital outreach as evidence of renewed relevance. Livestreamed talks routinely draw hundreds, and a recent virtual exhibition was praised for its accessibility. Yet docents report thinner crowds on weekday afternoons, and a long-planned renovation of the sculpture wing has been delayed twice, officially for "supply-chain" reasons. While the director insists that hybrid programming "meets audiences where they are," internal memos prioritize sponsorship metrics over plans to rebuild school partnerships suspended during the shutdowns. For now, the institution appears buoyed by online enthusiasm, though its footing with local communities seems less certain.`,
+
+q:"What does the passage suggest about weekday on-site attendance relative to digital metrics?",
+
+o:[
+"Digital growth may be concealing softness in physical visitation during certain periods",
+"Both physical and digital engagement are rising at the same rate across all times",
+"Physical attendance has collapsed entirely despite digital success"
+],
+
+a:0
+},
+
+{
+level:"C1",
+type:"Reading",
+
+text:`In the past year, the museum’s leadership has touted its expanded digital outreach as evidence of renewed relevance. Livestreamed talks routinely draw hundreds, and a recent virtual exhibition was praised for its accessibility. Yet docents report thinner crowds on weekday afternoons, and a long-planned renovation of the sculpture wing has been delayed twice, officially for "supply-chain" reasons. While the director insists that hybrid programming "meets audiences where they are," internal memos prioritize sponsorship metrics over plans to rebuild school partnerships suspended during the shutdowns. For now, the institution appears buoyed by online enthusiasm, though its footing with local communities seems less certain.`,
+
+q:"Which strategic risk is most strongly implied?",
+
+o:[
+"Overreliance on online indicators could erode the museum’s relationship with local communities and schools",
+"Transitioning to hybrid programming will eliminate the need for docents",
+"Sponsorships are incompatible with educational programming"
+],
+
+a:0
+},
+
+/* ==============================
+   C2 QUESTIONS
+============================== */
+
+{
+level:"C2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a7-d86c-70f3-acff-e9c1d7bd6a3e",
+
+q:"What does the speaker signal as most crucial to interrogate?",
+
+o:[
+"The underlying assumptions driving the projections",
+"The historical charts summarizing last year’s data",
+"The color scheme used in the slide deck"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a7-d86c-70f3-acff-e9c1d7bd6a3e",
+
+q:"In what way does the speaker position their forecast relative to consensus?",
+
+o:[
+"Highlights divergences and quantifies their sensitivity to small changes",
+"Claims full alignment and downplays uncertainty",
+"Rejects consensus entirely without justification"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a7-d86c-70f3-acff-e9c1d7bd6a3e",
+
+q:"When will materials be distributed?",
+
+o:[
+"Immediately after the assumptions section",
+"By close of play",
+"Next week after external review"
+],
+
+a:1
+},
+
+{
+level:"C2",
+type:"Listening",
+
+audio:"https://audio.jukehost.co.uk/019ed1a7-d86c-70f3-acff-e9c1d7bd6a3e",
+
+q:"How will audience questions be handled?",
+
+o:[
+"Taken spontaneously by unmuting at any time",
+"Collected in chat, grouped, and addressed later",
+"Submitted via email only after the session"
+],
+
+a:1
+},
+
+{
+level:"C2",
+type:"Grammar",
+
+q:"The minister’s remarks were, ____ , less a policy outline than a rehearsal of familiar talking points.",
+
+o:[
+"if anything",
+"if not",
+"if ever"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Grammar",
+
+q:"Had the committee been notified earlier, we ____ the rollout to avoid the clash with the festival.",
+
+o:[
+"would have staggered",
+"would stagger",
+"had staggered"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Grammar",
+
+q:"With respect, I’d suggest we ____ the term 'disruption' in favor of 'incremental reform,' which better fits the evidence.",
+
+o:[
+"dispense with",
+"do away",
+"put out"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Grammar",
+
+q:"____ the data persuasive, the board nonetheless requested an external audit before allocating funds.",
+
+o:[
+"Granted",
+"Given that",
+"Because"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Grammar",
+
+q:"It was essential that the memorandum ____ circulated privately; public release would have prejudiced the outcome.",
+
+o:[
+"be",
+"was",
+"were being"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Grammar",
+
+q:"The proposal is, to put it mildly, ____ with assumptions that remain untested and potentially circular.",
+
+o:[
+"replete",
+"rife",
+"riddled"
+],
+
+a:2
+},
+
+{
+level:"C2",
+type:"Vocabulary",
+
+q:"The meta-analysis sought to ____ the disparate findings into a coherent explanatory framework.",
+
+o:[
+"subsume",
+"surmise",
+"subdue"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Vocabulary",
+
+q:"Far from being a mere add-on, community consultation was ____ to the project’s legitimacy.",
+
+o:[
+"constitutive",
+"constituting",
+"constituent"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Vocabulary",
+
+q:"The author’s critique is ____ by extensive archival evidence, though alternative readings are acknowledged.",
+
+o:[
+"buttressed",
+"embroidered",
+"scaffolded"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Vocabulary",
+
+q:"The regulator warned that the firm’s assurances were '____ at best,' citing gaps in risk disclosure.",
+
+o:[
+"provisional",
+"perfunctory",
+"putative"
+],
+
+a:1
+},
+
+{
+level:"C2",
+type:"Vocabulary",
+
+q:"The panel praised the study’s methodological ____ but questioned its external validity.",
+
+o:[
+"rigor",
+"rigorism",
+"rigidity"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Reading",
+
+text:`The startup’s founders have been lauded for 'democratizing' access to investment opportunities, a claim repeated with ritual certainty in conference keynotes. Less rehearsed is the platform’s fee architecture, which, while artfully tiered, tends to reward frequent churn over patient holding. Advocates counter that any frictions are transient, the price of onboarding newcomers to a complex market. Perhaps. But read the quarterly memos closely: user growth is showcased with dazzling granularity, while retention and cohort quality are relegated to an appendix—if they appear at all. One could be forgiven for wondering whether the firm has mistaken motion for progress, and metrics for meaning.`,
+
+q:"What is the author’s primary critique of the company’s self-presentation?",
+
+o:[
+"It prioritizes impressive activity metrics over substantive indicators of sustainable value",
+"It understates the complexity of onboarding by hiding training materials",
+"It overemphasizes patient investment to the detriment of volume"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Reading",
+
+text:`The startup’s founders have been lauded for 'democratizing' access to investment opportunities, a claim repeated with ritual certainty in conference keynotes. Less rehearsed is the platform’s fee architecture, which, while artfully tiered, tends to reward frequent churn over patient holding. Advocates counter that any frictions are transient, the price of onboarding newcomers to a complex market. Perhaps. But read the quarterly memos closely: user growth is showcased with dazzling granularity, while retention and cohort quality are relegated to an appendix—if they appear at all. One could be forgiven for wondering whether the firm has mistaken motion for progress, and metrics for meaning.`,
+
+q:"Which best captures the author’s tone toward the 'democratizing' claim?",
+
+o:[
+"Wryly skeptical, noting formulaic repetition and unexamined assumptions",
+"Enthusiastic but cautious, endorsing the claim with minor caveats",
+"Neutral and descriptive, merely reporting stakeholder views"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Reading",
+
+text:`The startup’s founders have been lauded for 'democratizing' access to investment opportunities, a claim repeated with ritual certainty in conference keynotes. Less rehearsed is the platform’s fee architecture, which, while artfully tiered, tends to reward frequent churn over patient holding. Advocates counter that any frictions are transient, the price of onboarding newcomers to a complex market. Perhaps. But read the quarterly memos closely: user growth is showcased with dazzling granularity, while retention and cohort quality are relegated to an appendix—if they appear at all. One could be forgiven for wondering whether the firm has mistaken motion for progress, and metrics for meaning.`,
+
+q:"Structurally, how does the passage develop its argument?",
+
+o:[
+"It juxtaposes public praise with underexamined cost structures, then contrasts showcased vs. sidelined metrics to imply misalignment",
+"It narrates a chronological history of the company before presenting data tables",
+"It poses a hypothesis and tests it with randomized experiments"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Reading",
+
+text:`The startup’s founders have been lauded for 'democratizing' access to investment opportunities, a claim repeated with ritual certainty in conference keynotes. Less rehearsed is the platform’s fee architecture, which, while artfully tiered, tends to reward frequent churn over patient holding. Advocates counter that any frictions are transient, the price of onboarding newcomers to a complex market. Perhaps. But read the quarterly memos closely: user growth is showcased with dazzling granularity, while retention and cohort quality are relegated to an appendix—if they appear at all. One could be forgiven for wondering whether the firm has mistaken motion for progress, and metrics for meaning.`,
+
+q:"What does the phrase 'motion for progress, and metrics for meaning' most strongly imply?",
+
+o:[
+"Activity is being conflated with advancement, and numbers with substantive understanding",
+"The firm is transparently reporting both activity and understanding",
+"The market’s volatility invalidates all metric-based evaluations"
+],
+
+a:0
+},
+
+{
+level:"C2",
+type:"Reading",
+
+text:`The startup’s founders have been lauded for 'democratizing' access to investment opportunities, a claim repeated with ritual certainty in conference keynotes. Less rehearsed is the platform’s fee architecture, which, while artfully tiered, tends to reward frequent churn over patient holding. Advocates counter that any frictions are transient, the price of onboarding newcomers to a complex market. Perhaps. But read the quarterly memos closely: user growth is showcased with dazzling granularity, while retention and cohort quality are relegated to an appendix—if they appear at all. One could be forgiven for wondering whether the firm has mistaken motion for progress, and metrics for meaning.`,
+
+q:"What is the most plausible reading of the platform’s fee design in the context provided?",
+
+o:[
+"It may unintentionally incentivize behaviors that undermine long-term investor outcomes",
+"It is irrelevant to user behavior, serving only to cover fixed costs",
+"It chiefly benefits infrequent, patient holders through discounts"
+],
+
+a:0
+}
+];
+/* ==============================
+   RENDER LEVEL
+============================== */
+
+function renderLevel(){
+
+  const level =
+    LEVELS[currentLevelIndex];
+
+  const sectionType =
+    SECTIONS[currentSectionIndex];
+
+  const levelSections =
+    getLevelSections(level);
+
+  currentLevelQuestions =
+    levelSections[sectionType];
+
+  let html = `
+
+    <div class="level-title">
+      Current Level: ${level}
+      <br>
+      <span style="font-size:18px">
+        ${sectionType}
+      </span>
+    </div>
+
+  `;
+// ✅ عرض قطعة القراءة مرة واحدة فقط
+
+if(
+  sectionType === "Reading" &&
+  currentLevelQuestions.length &&
+  currentLevelQuestions[0].text
+){
+
+  html += `
+
+    <div class="reading">
+      ${currentLevelQuestions[0].text}
+    </div>
+
+  `;
+
+}
+
+  currentLevelQuestions.forEach((q,index)=>{
+
+    const answerKey =
+      `${level}_${sectionType}_${index}`;
+
+    const selectedAnswer =
+      answers[answerKey];
+
+    html += `
+
+    <div class="card">
+
+    <div class="type-badge">
+      ${sectionType}
+    </div>
+
+    `;
+
+    if(q.audio && index === 0){
+
+      html += `
+
+      <audio
+        controls
+        preload="auto"
+        style="
+          width:100%;
+          margin:15px 0;
+        "
+      >
+        <source
+          src="${q.audio.trim()}"
+          type="audio/mpeg"
+        >
+      </audio>
+
+      `;
+
+    }
+
+
+    html += `
+
+    <div class="question">
+      ${index + 1}. ${q.q}
+    </div>
+
+    `;
+
+    q.shuffledOptions.forEach((op,i)=>{
+
+      html += `
+
+      <label class="option">
+
+        <input
+          type="radio"
+          name="q_${answerKey}"
+          value="${i}"
+
+          ${
+            selectedAnswer == i
+            ? "checked"
+            : ""
+          }
+
+          onchange="
+  answers['${answerKey}']=${i};
+  saveProgress();
+"
+        >
+
+        ${op.text}
+
+      </label>
+
+      `;
+
+    });
+
+    html += `
+
+    </div>
+
+    `;
+
+  });
+
+  html += `
+
+  <div class="actions">
+
+    <button onclick="nextSection()">
+      ${
+        currentSectionIndex === SECTIONS.length - 1
+        ? "Finish Level"
+        : "Next Section"
+      }
+    </button>
+
+  </div>
+
+  `;
+
+  document
+    .getElementById("testBox")
+    .innerHTML = html;
+
+}
+function getLevelSections(level){
+
+  if(preparedLevels[level]){
+    return preparedLevels[level];
+  }
+
+  const levelQuestions =
+    questions.filter(
+      q => q.level === level
+    );
+
+  preparedLevels[level] = {
+
+    Listening:
+      levelQuestions
+        .filter(q => q.type === "Listening")
+        .map(q => prepareQuestion(q)),
+
+    Grammar:
+      shuffleArray(
+        levelQuestions.filter(
+          q => q.type === "Grammar"
+        )
+      ).map(q => prepareQuestion(q)),
+
+    Vocabulary:
+      shuffleArray(
+        levelQuestions.filter(
+          q => q.type === "Vocabulary"
+        )
+      ).map(q => prepareQuestion(q)),
+
+    Reading:
+      levelQuestions
+        .filter(q => q.type === "Reading")
+        .map(q => prepareQuestion(q))
+
+  };
+
+  return preparedLevels[level];
+
+}
+function nextSection(){
+
+  const level =
+    LEVELS[currentLevelIndex];
+
+  const sectionType =
+    SECTIONS[currentSectionIndex];
+
+  for(let i = 0; i < currentLevelQuestions.length; i++){
+
+    const answerKey =
+      `${level}_${sectionType}_${i}`;
+
+    if(answers[answerKey] === undefined){
+
+      alert("Please answer all questions.");
+      return;
+
+    }
+
+  }
+saveProgress();
+  if(currentSectionIndex < SECTIONS.length - 1){
+
+    currentSectionIndex++;
+
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+
+    renderLevel();
+
+  }else{
+
+    submitLevel();
+
+  }
+
+}
+/* ==============================
+   SUBMIT LEVEL
+============================== */
+
+function submitLevel(){
+const studentName =
+  document
+    .getElementById("studentName")
+    .value
+    .trim();
+
+const studentPhone =
+  document
+    .getElementById("studentPhone")
+    .value
+    .trim();
+
+  
+
+if(!studentID){
+  alert("Enter ID / Iqama Number");
+  return;
+}
+
+const level =
+  LEVELS[currentLevelIndex];
+
+const levelSections =
+  getLevelSections(level);
+
+const allLevelQuestions = [];
+
+SECTIONS.forEach(section=>{
+
+  levelSections[section].forEach((q,index)=>{
+
+    allLevelQuestions.push({
+      ...q,
+      section,
+      index
+    });
+
+  });
+
+});
+for(let i = 0; i < allLevelQuestions.length; i++){
+
+  const q =
+    allLevelQuestions[i];
+
+  const answerKey =
+    `${level}_${q.section}_${q.index}`;
+
+  if(answers[answerKey] === undefined){
+
+    alert("Please answer all questions.");
+    currentSectionIndex =
+      SECTIONS.indexOf(q.section);
+    renderLevel();
+    return;
+
+  }
+
+}
+
+let correct = 0;
+
+allLevelQuestions.forEach(q=>{
+
+  const answerKey =
+    `${level}_${q.section}_${q.index}`;
+
+  const userAnswer =
+    Number(answers[answerKey]);
+
+  if(userAnswer === q.newAnswerIndex){
+    correct++;
+  }
+
+});
+
+const total =
+  allLevelQuestions.length;
+
+  const percent =
+    Math.round(
+      (correct / total) * 100
+    );
+
+  finalStats[level] = {
+
+    correct,
+    total,
+    percent
+
+  };
+
+let placementLevel = "";
+
+switch(level){
+
+  case "A1":
+
+    if(correct <= 9){
+
+      placementLevel = "Level 1";
+
+      showResult(placementLevel);
+
+      return;
+
+    }
+
+    if(correct <= 14){
+
+      placementLevel = "Level 2";
+
+      showResult(placementLevel);
+
+      return;
+
+    }
+
+currentLevelIndex++;
+currentSectionIndex = 0;
+
+saveProgress();
+window.scrollTo({
+  top:0,
+  behavior:"smooth"
+});
+
+renderLevel();    return;
+
+  case "A2":
+
+    if(correct <= 9){
+
+      placementLevel = "Level 3";
+
+      showResult(placementLevel);
+
+      return;
+
+    }
+
+    if(correct <= 14){
+
+      placementLevel = "Level 4";
+
+      showResult(placementLevel);
+
+      return;
+
+    }
+
+currentLevelIndex++;
+currentSectionIndex = 0;
+
+saveProgress();;
+
+window.scrollTo({
+  top:0,
+  behavior:"smooth"
+});
+
+renderLevel();    return;
+
+  case "B1":
+
+    if(correct <= 9){
+
+      placementLevel = "Level 5";
+
+      showResult(placementLevel);
+
+      return;
+
+    }
+
+    if(correct <= 14){
+
+      placementLevel = "Level 6";
+
+      showResult(placementLevel);
+
+      return;
+
+    }
+
+currentLevelIndex++;
+currentSectionIndex = 0;
+
+saveProgress();
+window.scrollTo({
+  top:0,
+  behavior:"smooth"
+});
+
+renderLevel();    return;
+
+  case "B2":
+
+    if(correct <= 9){
+
+      placementLevel = "Level 7";
+
+      showResult(placementLevel);
+
+      return;
+
+    }
+
+    if(correct <= 14){
+
+      placementLevel = "Level 8";
+
+      showResult(placementLevel);
+
+      return;
+
+    }
+
+currentLevelIndex++;
+currentSectionIndex = 0;
+
+saveProgress();
+window.scrollTo({
+  top:0,
+  behavior:"smooth"
+});
+
+renderLevel();    return;
+
+  case "C1":
+
+    if(correct <= 9){
+
+      placementLevel = "Level 9";
+
+      showResult(placementLevel);
+
+      return;
+
+    }
+
+    if(correct <= 14){
+
+      placementLevel = "Level 10";
+
+      showResult(placementLevel);
+
+      return;
+
+    }
+
+currentLevelIndex++;
+currentSectionIndex = 0;
+
+saveProgress();
+window.scrollTo({
+  top:0,
+  behavior:"smooth"
+});
+
+renderLevel();    return;
+
+  case "C2":
+
+    if(correct <= 9){
+
+      placementLevel = "Level 11";
+
+      showResult(placementLevel);
+
+      return;
+
+    }
+
+    placementLevel = "Level 12";
+
+    showResult(placementLevel);
+
+    return;
+
+}
+}
+
+async function startTest(){
+
+  const studentName =
+    document.getElementById("studentName").value.trim();
+
+  const studentPhone =
+    document.getElementById("studentPhone").value.trim();
+
+  const studentID =
+    document.getElementById("studentID").value.trim();
+
+  if(!studentID){
+  alert("Enter ID / Iqama Number");
+  return;
+}
+
+  const oldResult =
+    await db
+      .collection("cefr_results")
+      .where("studentID","==",studentID)
+      .limit(1)
+      .get();
+
+  if(!oldResult.empty){
+
+    const docRef = oldResult.docs[0];
+    const row = docRef.data();
+
+    if(row.allowRetake === true){
+
+      if(row.retakeType === "placement"){
+
+        localStorage.removeItem(
+          "cefr_progress_" + studentID
+        );
+
+        await db
+          .collection("cefr_results")
+          .doc(docRef.id)
+          .update({
+            allowRetake:false,
+            retakeType:""
+          });
+
+      }
+
+      else if(row.retakeType === "writing"){
+
+        const placementLevel =
+          row.placementLevel || "Level 1";
+
+        currentPlacementLevel =
+          placementLevel;
+
+        const placementCEFR =
+          getCEFRFromPlacement(
+            placementLevel
+          );
+
+        document.getElementById(
+          "studentBox"
+        ).style.display = "none";
+
+        document.getElementById(
+          "result"
+        ).innerHTML = `
+          <div class="result">
+            <div>Placement Level</div>
+<div class="final-level" style="display:none">
+  ${placementLevel}
+</div>
+          </div>
+        `;
+
+        document.getElementById(
+          "writingBox"
+        ).style.display = "block";
+
+        const oldTopic =
+          document.getElementById(
+            "writingTopicBox"
+          );
+
+        if(oldTopic){
+          oldTopic.remove();
+        }
+
+        document
+          .getElementById("writingBox")
+          .insertAdjacentHTML(
+            "afterbegin",
+            `
+            <div class="reading" id="writingTopicBox">
+              <b>Writing Topic (${placementCEFR}):</b>
+              <br>
+              ${WRITING_TOPICS[placementCEFR]}
+            </div>
+            `
+          );
+
+        localStorage.setItem(
+          "cefr_progress_" + studentID,
+          JSON.stringify({
+            retakeType:"writing",
+            writingCompleted:false,
+            speakingCompleted:true,
+            currentStage:"writing",
+            level:placementCEFR,
+            finalLevel:placementLevel,
+            writingTopic:
+              WRITING_TOPICS[placementCEFR],
+            finalStats:
+              row.stats || {}
+          })
+        );
+
+        await db
+          .collection("cefr_results")
+          .doc(docRef.id)
+          .update({
+            allowRetake:false,
+            retakeType:""
+          });
+
+        return;
+      }
+
+      else if(row.retakeType === "speaking"){
+
+        const placementLevel =
+          row.placementLevel || "Level 1";
+
+        const placementCEFR =
+          getCEFRFromPlacement(
+            placementLevel
+          );
+
+        document.getElementById(
+          "studentBox"
+        ).style.display = "none";
+
+        document.getElementById(
+          "speakingBox"
+        ).style.display = "block";
+
+currentSpeakingIndex =
+  SPEAKING_LEVELS.indexOf(
+    placementCEFR
+  );
+if(
+  currentSpeakingIndex < 0 ||
+  isNaN(currentSpeakingIndex)
+){
+  currentSpeakingIndex = 0;
+}
+
+currentSpeakingQuestion = "";
+        currentSpeakingQuestion = "";
+        loadSpeakingQuestion();
+
+        await db
+          .collection("cefr_results")
+          .doc(docRef.id)
+          .update({
+            allowRetake:false,
+            retakeType:""
+          });
+
+        return;
+      }
+    }
+
+    else if(row.speakingLevel){
+
+      alert(
+        "This ID has already completed the placement test."
+      );
+
+      return;
+    }
+  }
+
+const progress = await loadProgress(studentID);
+
+if(progress){
+
+  document.getElementById("studentName").value =
+    progress.name || progress.studentName || studentName || "";
+
+  document.getElementById("studentPhone").value =
+    progress.phone || progress.studentPhone || studentPhone || "";
+
+}else{
+
+  if(!studentName){
+    alert("Enter student name");
+    return;
+  }
+
+  if(!studentPhone){
+    alert("Enter mobile number");
+    return;
+  }
+
+}
+if(progress){
+
+  currentLevelIndex = progress.currentLevelIndex || 0;
+  currentSectionIndex = progress.currentSectionIndex || 0;
+  answers = progress.answers || {};
+  finalStats = progress.finalStats || {};
+  preparedLevels = progress.preparedLevels || {};
+  currentPlacementLevel = progress.currentPlacementLevel || progress.finalLevel || "";
+  writingScore = progress.writingScore || 0;
+  writingLevel = progress.writingLevel || "";
+  speakingLevel = progress.speakingLevel || "";
+  speakingResults = progress.speakingResults || [];
+  currentSpeakingIndex = progress.currentSpeakingIndex || 0;
+
+  document.getElementById("studentBox").style.display = "none";
+  document.getElementById("instructionBox").style.display = "none";
+  document.getElementById("testBox").style.display = "none";
+  document.getElementById("writingBox").style.display = "none";
+  document.getElementById("speakingBox").style.display = "none";
+
+  if(progress.currentStage === "speaking"){
+
+    document.getElementById("speakingBox").style.display = "block";
+
+    currentSpeakingIndex = SPEAKING_LEVELS.indexOf(
+      progress.speakingStartLevel || progress.level || "A1"
+    );
+
+    if(currentSpeakingIndex < 0){
+      currentSpeakingIndex = 0;
+    }
+
+    currentSpeakingQuestion = "";
+    loadSpeakingQuestion();
+
+    return;
+  }
+
+  if(progress.currentStage === "writing"){
+
+    document.getElementById("result").innerHTML = `
+      <div class="result">
+        <div>Placement Level</div>
+<div class="final-level" style="display:none">
+  ${progress.finalLevel || progress.placementLevel}
+</div>
+      </div>
+    `;
+
+    const level = progress.level || getCEFRFromPlacement(
+      progress.finalLevel || progress.placementLevel
+    );
+
+    const topic = progress.writingTopic || WRITING_TOPICS[level];
+
+    const oldTopic = document.getElementById("writingTopicBox");
+
+    if(oldTopic){
+      oldTopic.remove();
+    }
+
+    document.getElementById("writingBox").insertAdjacentHTML(
+      "afterbegin",
+      `
+      <div class="reading" id="writingTopicBox">
+        <b>Writing Topic (${level}):</b>
+        <br>
+        ${topic}
+      </div>
+      `
+    );
+
+    document.getElementById("writingBox").style.display = "block";
+
+    return;
+  }
+
+  document.getElementById("testBox").style.display = "block";
+  renderLevel();
+  return;
+}
+  if(progress){
+
+    const data =
+      JSON.parse(progress);
+
+    if(
+      data.writingCompleted &&
+      !data.speakingCompleted
+    ){
+
+      document.getElementById(
+        "speakingBox"
+      ).style.display = "block";
+
+      currentSpeakingIndex =
+        SPEAKING_LEVELS.indexOf(
+          data.speakingStartLevel
+        );
+
+      if(currentSpeakingIndex < 0){
+        currentSpeakingIndex = 0;
+      }
+
+      currentSpeakingQuestion = "";
+
+      loadSpeakingQuestion();
+
+      return;
+    }
+
+    if(!data.writingCompleted){
+
+      document.getElementById(
+        "studentBox"
+      ).style.display = "none";
+
+      document.getElementById(
+        "result"
+      ).innerHTML = `
+        <div class="result">
+          <div>CEFR Level</div>
+          <div class="final-level">
+            ${data.finalLevel}
+          </div>
+        </div>
+      `;
+
+      finalStats =
+        data.finalStats || {};
+
+      document.getElementById(
+        "writingBox"
+      ).style.display = "block";
+
+      return;
+    }
+
+    if(data.speakingCompleted){
+
+      alert(
+        "You have already completed this placement test."
+      );
+
+      return;
+    }
+  }
+
+  document.getElementById(
+    "studentBox"
+  ).style.display = "none";
+
+  document.getElementById(
+    "instructionBox"
+  ).style.display = "block";
+
+  document.getElementById(
+    "testBox"
+  ).style.display = "none";
+
+  document.getElementById(
+    "submitArea"
+  ).style.display = "none";
+}function continueToTest(){
+
+  const checked =
+    document
+      .getElementById("instructionCheck")
+      .checked;
+
+  if(!checked){
+
+    alert(
+      "Please confirm that you have read and understood the instructions."
+    );
+
+    return;
+
+  }
+
+  document
+    .getElementById("instructionBox")
+    .style.display =
+    "none";
+
+  document
+    .getElementById("testBox")
+    .style.display =
+    "block";
+
+  renderLevel();
+
+}
+function getCEFRFromPlacement(level){
+
+  switch(level){
+
+    case "Level 1":
+    case "Level 2":
+      return "A1";
+
+    case "Level 3":
+    case "Level 4":
+      return "A2";
+
+    case "Level 5":
+    case "Level 6":
+      return "B1";
+
+    case "Level 7":
+    case "Level 8":
+      return "B2";
+
+    case "Level 9":
+    case "Level 10":
+      return "C1";
+
+    case "Level 11":
+    case "Level 12":
+      return "C2";
+
+    default:
+      return "A1";
+
+  }
+
+}
+/* ==============================
+   SHOW RESULT
+============================== */
+
+async function showResult(level){
+clearProgress(
+  document.getElementById("studentID").value.trim()
+);
+currentPlacementLevel = level;
+
+  document
+    .getElementById("testBox")
+    .style.display =
+    "none";
+
+  document
+    .getElementById("submitBtn")
+    .style.display =
+    "none";
+
+  let html = `
+
+    <div class="result">
+
+      <div>
+        Final CEFR Level
+      </div>
+
+<div class="final-level" style="display:none">
+  ${level}
+</div>
+      <hr>
+
+      <div class="stats">
+
+  `;
+
+  Object.keys(finalStats)
+    .forEach(l=>{
+
+      html += `
+
+        <div class="stat-box">
+
+          ${l}
+
+          <br><br>
+
+          ${finalStats[l].correct}
+          /
+          ${finalStats[l].total}
+
+          <br><br>
+
+          ${finalStats[l].percent}%
+
+        </div>
+
+      `;
+
+    });
+
+  html += `
+
+      </div>
+
+    </div>
+
+  `;
+document
+  .getElementById("result")
+  .innerHTML = html;
+
+const placementCEFR =
+  getCEFRFromPlacement(level);
+
+const writingTopic =
+  WRITING_TOPICS[placementCEFR];
+
+document
+  .getElementById("writingText")
+  .placeholder =
+  writingTopic;
+
+const oldTopic =
+  document.getElementById(
+    "writingTopicBox"
+  );
+
+if(oldTopic){
+  oldTopic.remove();
+}
+
+document
+  .getElementById("writingBox")
+  .insertAdjacentHTML(
+    "afterbegin",
+    `
+    <div class="reading" id="writingTopicBox">
+      <b>Writing Topic (${placementCEFR}):</b>
+      <br>
+      ${writingTopic}
+    </div>
+    `
+  );
+const studentProgress = {
+currentStage: "writing",
+placementDone: true,
+writingCompleted: false,
+speakingCompleted: false,
+speakingStartLevel:
+  placementCEFR,
+
+  studentName:
+    document.getElementById("studentName").value,
+
+  studentPhone:
+    document.getElementById("studentPhone").value,
+
+  studentID:
+    document.getElementById("studentID").value,
+
+level:
+  placementCEFR,
+
+writingTopic:
+  writingTopic,
+  placementLevel: level,
+
+  finalLevel: level,
+
+  finalStats: finalStats,
+
+  writingCompleted: false,
+
+  speakingCompleted: false
+
+};
+await saveProgress(studentProgress);
+
+await db
+  .collection("cefr_results")
+  .doc(
+    studentProgress.studentID
+  )
+  .set({
+  name:
+    studentProgress.studentName,
+
+  phone:
+    studentProgress.studentPhone,
+
+  studentID:
+    studentProgress.studentID,
+
+  level:
+    placementCEFR,
+
+  placementLevel:
+    level,
+
+  writingLevel:
+    "",
+
+  speakingLevel:
+    "",
+
+  finalCEFR:
+    placementCEFR,
+
+  finalLevel:
+    level,
+
+  stats:
+    finalStats,
+
+  testCompleted:
+    true,
+
+  writingCompleted:
+    false,
+
+  speakingCompleted:
+    false,
+
+  date:
+    new Date()
+      .toLocaleString(),
+
+  timestamp:
+    Date.now()
+
+});
+document
+  .getElementById("writingBox")
+  .style.display = "block";
+
+}
+
+document
+  .getElementById("testBox")
+  .innerHTML = "";
+async function extractTextFromImage(file){
+
+  const result =
+    await Tesseract.recognize(
+      file,
+      "eng"
+    );
+
+  return result.data.text;
+
+}
+
+async function getWritingText(file){
+
+  const ext =
+    file.name
+.split(".")
+.pop()
+      .toLowerCase();
+
+  // Images
+  if(
+    ["jpg","jpeg","png","webp"]
+      .includes(ext)
+  ){
+
+    return await
+      extractTextWithAI(file);
+
+  }
+
+  // DOCX
+  if(ext === "docx"){
+
+    const buffer =
+      await file.arrayBuffer();
+
+    const result =
+      await mammoth.extractRawText({
+        arrayBuffer:buffer
+      });
+
+    return result.value;
+
+  }
+
+  // TXT
+  if(ext === "txt"){
+
+    return await file.text();
+
+  }
+
+  // PDF
+  if(ext === "pdf"){
+
+    const pdfData =
+      await file.arrayBuffer();
+
+    const pdf =
+      await pdfjsLib
+        .getDocument({
+          data:pdfData
+        })
+        .promise;
+
+    let text = "";
+
+    for(
+      let i = 1;
+      i <= pdf.numPages;
+      i++
+    ){
+
+      const page =
+        await pdf.getPage(i);
+
+      const content =
+        await page.getTextContent();
+
+      text +=
+        content.items
+          .map(
+            item => item.str
+          )
+          .join(" ");
+
+      text += "\n";
+
+    }
+
+    return text;
+
+  }
+
+  throw new Error(
+    "Unsupported file type"
+  );
+
+}
+async function evaluateWritingAI(
+  text,
+  topic,
+  targetLevel
+){
+
+  const prompt = `
+You are a professional CEFR writing examiner.
+
+Evaluate the student's writing according to the target CEFR level and the assigned topic.
+
+Return ONLY JSON:
+
+{
+"level":"",
+"score":0,
+"grammar":0,
+"vocabulary":0,
+"coherence":0,
+"taskAchievement":0,
+"feedback":""
+}
+
+Rules:
+- Check if the student answered the assigned topic.
+- If the answer is off-topic, reduce the score strongly.
+- Evaluate grammar, vocabulary, coherence, and task achievement.
+- The level must be A1, A2, B1, B2, C1, or C2.
+- Be strict but fair.
+
+Target CEFR Level:
+${targetLevel}
+
+Writing Topic:
+${topic}
+
+Student Writing:
+${text}
+`;
+
+const response =
+  await fetch(
+    "https://muddy-frost-dfd0.abbassaboali.workers.dev/",
+    {
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+        text: prompt
+      })
+    }
+  );
+
+const data =
+  await response.json();
+
+if(!response.ok){
+  throw new Error(
+    data.error ||
+    "Writing evaluation failed"
+  );
+}
+
+let resultText =
+  data.candidates?.[0]
+    ?.content?.parts?.[0]
+    ?.text
+    ?.trim();
+
+if(!resultText){
+  console.log("WORKER RESPONSE:", data);
+  throw new Error("No text returned from Worker/Gemini. Check Worker code or API key.");
+}
+
+resultText =
+  resultText
+    .replace(/```json/g,"")
+    .replace(/```/g,"")
+    .trim();
+
+return JSON.parse(resultText);
+}
+async function extractTextWithAI(file){
+
+  const imageBase64 = await imageToBase64(file);
+  const base64Data = imageBase64.split(",")[1];
+
+  if(!base64Data){
+    throw new Error("Failed to convert image to base64.");
+  }
+
+  const mimeType = file.type || "image/jpeg";
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: "Read all handwritten or printed English text from this image. Return only the extracted text. If unreadable, return IMAGE_NOT_READABLE."
+              },
+              {
+                inline_data: {
+                  mime_type: mimeType,
+                  data: base64Data
+                }
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0
+        }
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  console.log("Gemini image response:", data);
+
+  if(!response.ok){
+    throw new Error(
+      data.error?.message || "Gemini Image Error"
+    );
+  }
+
+  const extractedText =
+    data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+  if(!extractedText || extractedText.includes("IMAGE_NOT_READABLE")){
+    throw new Error("The image could not be read. Please upload a clearer image.");
+  }
+
+  return extractedText;
+}
+function calculateFinalCEFR(
+  testLevel,
+  writingLevel,
+  speakingLevel
+){
+
+  const levels = [
+    "A1",
+    "A2",
+    "B1",
+    "B2",
+    "C1",
+    "C2"
+  ];
+
+  const test =
+    levels.indexOf(testLevel);
+
+  const writing =
+    levels.indexOf(writingLevel);
+
+  const speaking =
+    levels.indexOf(speakingLevel);
+
+  if(
+    test === -1 ||
+    writing === -1 ||
+    speaking === -1
+  ){
+    return testLevel;
+  }
+
+  const lowest =
+    Math.min(
+      test,
+      writing,
+      speaking
+    );
+
+  return levels[lowest];
+
+}
+
+
+
+/* ==============================
+   AI FINAL CEFR
+   يراجع جميع نتائج الاختبار والكتابة والتحدث
+============================== */
+const OPENAI_WORKER_URL =
+  "https://prudle-openai.abbassaboali.workers.dev/";
+
+function extractAIText(data){
+  return String(
+    data?.text ||
+    data?.output_text ||
+    data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+    ""
+  ).trim();
+}
+
+function cleanAIJSON(text){
+  return String(text || "")
+    .replace(/```json/gi, "")
+    .replace(/```/g, "")
+    .trim();
+}
+
+async function calculateAIFinalCEFR({
+  testLevel,
+  placementLevel,
+  stats,
+  writing,
+  speaking
+}){
+  const fallbackLevel = calculateFinalCEFR(
+    testLevel,
+    writing?.level,
+    speaking?.level
+  );
+
+  const prompt = `
+You are a senior CEFR placement examiner.
+
+Determine ONE final CEFR level by reviewing ALL available evidence together.
+Do not simply choose the lowest component automatically. Use professional judgement,
+but remain conservative when evidence is inconsistent or incomplete.
+
+Valid levels only: A1, A2, B1, B2, C1, C2.
+
+Evidence:
+1. Adaptive placement test CEFR: ${testLevel || "Not available"}
+2. Placement course level: ${placementLevel || "Not available"}
+3. Placement test statistics by level and section:
+${JSON.stringify(stats || {}, null, 2)}
+
+4. Writing assessment:
+${JSON.stringify(writing || {}, null, 2)}
+
+5. Speaking assessment:
+${JSON.stringify(speaking || {}, null, 2)}
+
+Decision rules:
+- Consider grammar, vocabulary, reading, listening, writing, fluency, pronunciation, coherence, and task achievement.
+- Give more weight to consistent evidence across multiple skills.
+- A single weak or unusually strong component should not control the whole result without supporting evidence.
+- When evidence is borderline, choose the lower defensible CEFR level.
+- Never return a level outside A1-C2.
+- Explain the main evidence briefly.
+
+Return ONLY valid JSON in this exact structure:
+{
+  "finalCEFR": "A1",
+  "confidence": 0,
+  "reason": "",
+  "strengths": [],
+  "limitations": []
+}
+
+Confidence must be an integer from 0 to 100.
+`;
+
+  try{
+    const response = await fetch(
+      OPENAI_WORKER_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          task: "generic_ai",
+          text: prompt,
+          json: true,
+          temperature: 0.1
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok){
+      throw new Error(
+        data?.error ||
+        "AI final CEFR evaluation failed."
+      );
+    }
+
+    const parsed = JSON.parse(
+      cleanAIJSON(extractAIText(data))
+    );
+
+    const validLevels = [
+      "A1", "A2", "B1", "B2", "C1", "C2"
+    ];
+
+    const finalCEFR = String(
+      parsed?.finalCEFR || ""
+    ).toUpperCase();
+
+    if(!validLevels.includes(finalCEFR)){
+      throw new Error(
+        "AI returned an invalid CEFR level."
+      );
+    }
+
+    return {
+      finalCEFR,
+      confidence: Math.max(
+        0,
+        Math.min(
+          100,
+          Math.round(Number(parsed?.confidence) || 0)
+        )
+      ),
+      reason: String(parsed?.reason || "").trim(),
+      strengths: Array.isArray(parsed?.strengths)
+        ? parsed.strengths
+        : [],
+      limitations: Array.isArray(parsed?.limitations)
+        ? parsed.limitations
+        : [],
+      source: "ai"
+    };
+
+  }catch(error){
+    console.error(
+      "AI Final CEFR fallback:",
+      error
+    );
+
+    return {
+      finalCEFR: fallbackLevel,
+      confidence: 0,
+      reason:
+        "AI review was unavailable, so the system used the existing conservative CEFR rule.",
+      strengths: [],
+      limitations: [
+        error?.message || "AI evaluation unavailable"
+      ],
+      source: "fallback"
+    };
+  }
+}
+
+function getPlacementLevel(
+  cefr
+){
+
+  switch(cefr){
+
+    case "A1":
+      return "Level 1";
+
+    case "A2":
+      return "Level 3";
+
+    case "B1":
+      return "Level 5";
+
+    case "B2":
+      return "Level 7";
+
+    case "C1":
+      return "Level 9";
+
+    case "C2":
+      return "Level 11";
+
+    default:
+      return "-";
+
+  }
+
+}
+function imageToBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = function(){
+      resolve(reader.result);
+    };
+
+    reader.onerror = function(error){
+      reject(error);
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+async function analyzeWriting(){
+const btn =
+  document.querySelector(
+    "#writingBox button"
+  );
+
+if(window.isSavingWriting){
+  return;
+}
+
+window.isSavingWriting = true;
+
+btn.disabled = true;
+
+btn.innerText =
+  "Saving...";
+
+let text =
+document
+.getElementById(
+"writingText"
+)
+.value
+.trim();
+
+if(!text){
+
+const file =
+document
+.getElementById(
+"writingFile"
+)
+.files[0];
+
+if(!file){
+
+  alert(
+    "Write text or upload file"
+  );
+
+  window.isSavingWriting = false;
+
+  btn.disabled = false;
+
+  btn.innerText =
+    "Analyze Writing";
+
+  return;
+
+}
+text =
+await getWritingText(
+file
+);
+
+// ✅ إظهار النص المستخرج للطالب
+document
+  .getElementById(
+    "writingText"
+  )
+  .value = text;
+
+}
+document
+.getElementById(
+"writingResult"
+)
+.innerHTML =
+"<div class='result'>Analyzing...</div>";
+
+try{
+
+const studentID =
+  document
+    .getElementById("studentID")
+    .value
+    .trim();
+
+const progress = await loadProgress(studentID);
+const targetLevel =
+  progress?.level || "A1";
+
+const writingTopic =
+  progress?.writingTopic ||
+  WRITING_TOPICS[targetLevel];
+
+const result =
+  await evaluateWritingAI(
+    text,
+    writingTopic,
+    targetLevel
+  );
+writingScore =
+  result.score;
+
+const placementLevel =
+  document
+    .querySelector(
+      "#result .final-level"
+    )
+    ?.innerText || "-";
+
+const testLevel =
+  getCEFRFromPlacement(
+    placementLevel
+  );
+
+const finalCEFR =
+  calculateFinalCEFR(
+    testLevel,
+    result.level,
+    result.level
+  );
+
+const savedPlacementLevel =
+  currentPlacementLevel;
+const currentCEFR =
+  getCEFRFromPlacement(
+    savedPlacementLevel
+  );
+let finalPlacementLevel;
+
+if(
+  finalCEFR === currentCEFR
+){
+
+finalPlacementLevel =
+  savedPlacementLevel;
+}else{
+
+  finalPlacementLevel =
+    getPlacementLevel(
+      finalCEFR
+    );
+
+}
+const oldDoc =
+  await db
+    .collection("cefr_results")
+    .doc(studentID)
+    .get();
+
+const oldData =
+  oldDoc.data() || {};
+const savedLevel =
+  oldData.level || "-";
+await db
+  .collection("cefr_results")
+  .doc(studentID)
+  .update({
+speakingLevel:
+  oldData.speakingLevel || "",
+
+speakingFluency:
+  oldData.speakingFluency || 0,
+
+speakingGrammar:
+  oldData.speakingGrammar || 0,
+
+speakingVocabulary:
+  oldData.speakingVocabulary || 0,
+
+speakingPronunciation:
+  oldData.speakingPronunciation || 0,
+
+speakingFeedback:
+  oldData.speakingFeedback || "",
+
+speakingTranscript:
+  oldData.speakingTranscript || "",
+
+speakingAudio:
+  oldData.speakingAudio || "",
+finalCEFR: finalCEFR,
+
+finalPlacementLevel:
+  finalPlacementLevel,
+
+finalLevel:
+  finalPlacementLevel,
+allowRetake:false,
+  name:
+    document
+      .getElementById("studentName")
+      .value,
+
+  studentID:
+    document
+      .getElementById("studentID")
+      .value,
+
+  phone:
+    document
+      .getElementById("studentPhone")
+      .value,
+
+  writingText:text,
+
+  writingFeedback:
+    result.feedback,
+
+  writingGrammar:
+    result.grammar,
+
+  writingVocabulary:
+    result.vocabulary,
+
+  writingCoherence:
+    result.coherence,
+
+level:
+  Object.keys(finalStats).length
+    ? Object.keys(finalStats).pop()
+    : savedLevel,
+placementLevel:
+  savedPlacementLevel,
+  writingLevel:
+    result.level,
+
+  writingScore:
+    result.score,
+
+  stats:finalStats,
+
+  date:
+    new Date()
+      .toLocaleString(),
+
+  timestamp:
+    Date.now()
+
+});
+window.isSavingWriting = false;
+
+if(progress){
+
+  // ✅ إذا كانت إعادة كتابة فقط
+if(
+  progress.retakeType ===
+  "writing"
+){
+
+  progress.writingCompleted =
+    true;
+
+  progress.speakingCompleted =
+    true;
+
+  progress.currentStage =
+    "completed";
+
+  localStorage.setItem(
+    "cefr_progress_" +
+    studentID,
+    JSON.stringify(progress)
+  );
+
+}else{
+
+  progress.writingCompleted =
+    true;
+
+  progress.speakingCompleted =
+    false;
+
+  progress.currentStage =
+    "speaking";
+
+  localStorage.setItem(
+    "cefr_progress_" +
+    studentID,
+    JSON.stringify(progress)
+  );
+}
+
+}
+writingLevel =
+result.level;
+document
+  .getElementById("writingText")
+  .disabled = true;
+
+document
+  .getElementById("writingFile")
+  .disabled = true;
+
+const analyzeBtn =
+  document.querySelector(
+    "#writingBox button"
+  );
+
+if(analyzeBtn){
+
+  analyzeBtn.disabled = true;
+
+  analyzeBtn.innerText =
+    "Submitted";
+
+  analyzeBtn.style.opacity =
+    ".6";
+
+  analyzeBtn.style.cursor =
+    "not-allowed";
+
+}
+
+document
+.getElementById(
+"writingResult"
+)
+.innerHTML = `
+
+<div class="result">
+
+<h2>
+Writing CEFR Level
+</h2>
+
+<div class="final-level">
+${result.level}
+</div>
+
+<div class="stats">
+
+<div class="stat-box">
+Score
+<br><br>
+${result.score}
+</div>
+
+<div class="stat-box">
+Grammar
+<br><br>
+${result.grammar}
+</div>
+
+<div class="stat-box">
+Vocabulary
+<br><br>
+${result.vocabulary}
+</div>
+
+<div class="stat-box">
+Coherence
+<br><br>
+${result.coherence}
+</div>
+
+</div>
+
+<br>
+
+<div class="reading">
+${result.feedback}
+</div>
+
+</div>
+`;
+
+if(
+  progress?.retakeType ===
+  "writing"
+){
+
+  alert(
+    "Writing assessment saved successfully."
+  );
+
+  return;
+
+}
+const speakingStartLevel =
+  progress?.level ||
+  getCEFRFromPlacement(currentPlacementLevel) ||
+  "A1";
+
+await saveProgress({
+  currentStage: "speaking",
+  placementDone: true,
+  writingCompleted: true,
+  speakingCompleted: false,
+  writingLevel: result.level,
+  writingScore: result.score,
+  speakingStartLevel: speakingStartLevel
+});
+document
+  .getElementById(
+    "speakingBox"
+  )
+  .style.display =
+  "block";
+
+currentSpeakingIndex =
+  SPEAKING_LEVELS.indexOf(
+    speakingStartLevel
+  );
+
+if(currentSpeakingIndex < 0){
+  currentSpeakingIndex = 0;
+}
+loadSpeakingQuestion();
+}catch(err){
+  window.isSavingWriting = false;
+
+  btn.disabled = false;
+
+  btn.innerText =
+    "Analyze Writing";
+
+  console.error(
+    "FULL ERROR:",
+    err
+  );
+
+  alert(
+    err.message ||
+    JSON.stringify(err) ||
+    "Unknown Error"
+  );
+
+}
+
+}
+function speakQuestion(){
+
+  const audio =
+    document.getElementById(
+      "questionAudio"
+    );
+
+  audio.currentTime = 0;
+
+  audio.play();
+
+}
+/* ==============================
+   SPEAKING RECORDING
+============================== */
+
+async function startSpeakingTest(){
+
+  document
+    .getElementById("recordBtn")
+    .disabled = false;
+
+  // إذا السؤال معروض بالفعل لا تعيد من البداية
+  if(currentSpeakingQuestion){
+    return;
+  }
+
+  await loadSpeakingQuestion();
+
+}
+async function loadSpeakingQuestion(){
+
+  const level =
+    SPEAKING_LEVELS[
+      currentSpeakingIndex
+    ];
+
+  document
+    .getElementById("speakingLevelTitle")
+    .innerText = level;
+
+  const list =
+    FALLBACK_SPEAKING_QUESTIONS[level];
+
+  currentSpeakingQuestion =
+    list[0];
+
+  document
+    .getElementById("speakingQuestionText")
+    .innerText =
+    currentSpeakingQuestion;
+
+  const audio =
+    document.getElementById(
+      "questionAudio"
+    );
+
+  const audioUrl =
+    SPEAKING_AUDIO[
+      currentSpeakingQuestion
+    ];
+
+  if(audioUrl){
+
+    audio.src = audioUrl;
+    audio.load();
+
+  }else{
+
+    audio.removeAttribute("src");
+    audio.load();
+
+  }
+
+  document
+    .getElementById("speakingResult")
+    .innerHTML = "";
+
+  currentAudioBlob = null;
+
+}
+async function generateSpeakingQuestionAI(level){
+
+  const prompt = `
+Create ONLY ONE speaking question.
+
+Rules:
+
+A1:
+- What is your name?
+- How old are you?
+- Where are you from?
+- Tell me about your family.
+
+A2:
+- Describe your daily routine.
+- What do you usually do on weekends?
+- What is your favorite food and why?
+
+B1:
+- Describe a memorable trip.
+- Talk about a challenge you faced.
+- What are the benefits of learning English?
+
+B2:
+- What are the advantages and disadvantages of social media?
+- Does technology improve communication? Why?
+- How can schools improve education?
+
+C1:
+- Discuss the impact of globalization on culture.
+- Should governments regulate AI?
+- What factors influence economic growth?
+
+C2:
+- To what extent should individual freedom be limited for public welfare?
+- Discuss the ethical implications of artificial intelligence.
+- How can societies balance innovation and regulation?
+
+Return ONLY ONE question suitable for CEFR ${level}.
+`;
+const response =
+  await fetch(
+    "https://muddy-frost-dfd0.abbassaboali.workers.dev/",
+    {
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+        text: prompt
+      })
+    }
+  );
+
+const data =
+  await response.json();
+
+if(!response.ok){
+
+  throw new Error(
+    data.error ||
+    "Question generation failed"
+  );
+
+}
+
+return data.candidates?.[0]
+  ?.content?.parts?.[0]
+  ?.text
+?.trim();
+}
+
+async function startRecording(){
+  if(
+    mediaRecorder &&
+    mediaRecorder.state === "recording"
+  ){
+    alert("Recording is already running.");
+    return;
+  }
+
+  audioChunks = [];
+  currentAudioBlob = null;
+  currentTranscript = "";
+
+  const recordBtn =
+    document.getElementById("recordBtn");
+
+  const recordTimer =
+    document.getElementById("recordTimer");
+
+  try{
+
+    if(
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ){
+      alert(
+        "Microphone is not supported on this device."
+      );
+      return;
+    }
+
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        audio:true
+      });
+
+    recordBtn.style.background = "#dc2626";
+    recordBtn.innerText = "Recording...";
+
+    recordingSeconds = 0;
+    recordTimer.innerText = "00:00";
+    recordTimer.style.display = "block";
+
+    recordingTimerInterval =
+      setInterval(function(){
+
+        recordingSeconds++;
+
+        const minutes =
+          String(Math.floor(recordingSeconds / 60))
+            .padStart(2,"0");
+
+        const seconds =
+          String(recordingSeconds % 60)
+            .padStart(2,"0");
+
+        recordTimer.innerText =
+          minutes + ":" + seconds;
+
+      },1000);
+
+    mediaRecorder =
+      new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable =
+      function(e){
+
+        if(e.data.size > 0){
+          audioChunks.push(e.data);
+        }
+
+      };
+
+    mediaRecorder.onstop =
+      function(){
+
+        clearInterval(recordingTimerInterval);
+
+        recordBtn.style.background = "#164478";
+        recordBtn.innerText = "Start Recording Answer";
+
+        currentAudioBlob =
+          new Blob(audioChunks,{
+            type:"audio/webm"
+          });
+
+        const audioUrl =
+          URL.createObjectURL(currentAudioBlob);
+
+        const audio =
+          document.getElementById("audioPreview");
+
+        audio.src = audioUrl;
+        audio.style.display = "block";
+
+        const reader =
+          new FileReader();
+
+        reader.onloadend =
+          function(){
+
+            speakingAudioBase64 =
+              reader.result;
+
+            speakingAudios.push(reader.result);
+
+          };
+
+        reader.readAsDataURL(currentAudioBlob);
+
+        stream.getTracks().forEach(
+          track => track.stop()
+        );
+
+      };
+
+    mediaRecorder.start();
+
+  }catch(err){
+
+    console.error(err);
+
+    clearInterval(recordingTimerInterval);
+
+    recordTimer.style.display = "none";
+
+    recordBtn.style.background = "#164478";
+    recordBtn.innerText = "Start Recording Answer";
+
+    alert("Please allow microphone access.");
+
+  }
+
+}
+function stopRecording(){
+
+  if(
+    mediaRecorder &&
+    mediaRecorder.state === "recording"
+  ){
+    mediaRecorder.stop();
+  }else{
+    alert("No recording is running.");
+  }
+
+
+}
+
+async function evaluateSpeakingAnswerAI(
+  level,
+  question,
+  answer
+){
+
+  const prompt = `
+You are a professional CEFR speaking examiner.
+
+Evaluate the student's spoken answer based on meaning and communication, not exact keywords.
+
+Return ONLY JSON:
+
+{
+"passed":true,
+"level":"",
+"score":0,
+"fluency":0,
+"grammar":0,
+"vocabulary":0,
+"pronunciation":0,
+"feedback":""
+}
+
+Target CEFR Level:
+${level}
+
+Question:
+${question}
+
+Student Transcript:
+${answer}
+`;
+
+const response =
+  await fetch(
+    "https://muddy-frost-dfd0.abbassaboali.workers.dev/",
+    {
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+        text: prompt
+      })
+    }
+  );
+
+const data =
+  await response.json();
+
+if(!response.ok){
+  throw new Error(
+    data.error ||
+    "Speaking evaluation failed"
+  );
+}
+
+let text =
+  data.candidates?.[0]
+    ?.content?.parts?.[0]
+    ?.text
+    ?.trim();
+
+text =
+  text
+    .replace(/```json/g,"")
+    .replace(/```/g,"")
+    .trim();
+
+return JSON.parse(text);
+}
+
+async function analyzeSpeakingAnswer(){
+
+  if(!currentSpeakingQuestion){
+    alert("Click Start Speaking Test first.");
+    return;
+  }
+
+  if(!currentAudioBlob){
+    alert("Please record your answer first.");
+    return;
+  }
+
+  const btn =
+    document.querySelector(
+      'button[onclick="analyzeSpeakingAnswer()"]'
+    );
+
+  btn.disabled = true;
+  btn.innerText = "Analyzing...";
+
+  const level =
+    SPEAKING_LEVELS[currentSpeakingIndex];
+
+  try{
+
+const transcript =
+  await transcribeSpeakingAudio(
+    currentAudioBlob
+  );
+
+if(!transcript){
+
+  alert(
+    "Could not transcribe audio."
+  );
+
+  btn.disabled = false;
+
+  btn.innerText =
+    "Analyze This Answer";
+
+  return;
+
+}
+const result =
+  await evaluateSpeakingAnswerAI(
+    level,
+    currentSpeakingQuestion,
+    transcript
+  );
+
+    speakingResults.push({
+      targetLevel: level,
+      question: currentSpeakingQuestion,
+      transcript: transcript,
+      passed: result.passed === true,
+      level: result.level || level,
+      score: result.score || 0,
+      fluency: result.fluency || 0,
+      grammar: result.grammar || 0,
+      vocabulary: result.vocabulary || 0,
+      pronunciation: result.pronunciation || 0,
+      feedback: result.feedback || ""
+    });
+
+    showSpeakingStepResult(
+      result,
+      transcript
+    );
+
+    await finishSpeakingTest();
+
+  }catch(e){
+
+    console.error(e);
+
+    alert(
+      e.message ||
+      "Speaking Error"
+    );
+
+  }
+
+  btn.disabled = false;
+  btn.innerText = "Analyze This Answer";
+
+}
+function showSpeakingStepResult(
+  result,
+  transcript
+){
+
+  document
+    .getElementById("speakingResult")
+    .innerHTML = `
+
+<div class="result">
+
+<h3>
+Question Result
+</h3>
+
+<div class="stats">
+
+<div class="stat-box">
+Level
+<br><br>
+${result.level || "-"}
+</div>
+
+<div class="stat-box">
+Score
+<br><br>
+${result.score || 0}
+</div>
+
+<div class="stat-box">
+Fluency
+<br><br>
+${result.fluency || 0}
+</div>
+
+<div class="stat-box">
+Grammar
+<br><br>
+${result.grammar || 0}
+</div>
+
+<div class="stat-box">
+Vocabulary
+<br><br>
+${result.vocabulary || 0}
+</div>
+
+<div class="stat-box">
+Pronunciation
+<br><br>
+${result.pronunciation || 0}
+</div>
+
+</div>
+
+<br>
+
+<div class="reading">
+<b>Transcript:</b>
+<br>
+${transcript || "-"}
+</div>
+
+<div class="reading">
+<b>Feedback:</b>
+<br>
+${result.feedback || "-"}
+</div>
+
+</div>
+
+`;
+
+}
+async function finishSpeakingManually(){
+
+  if(
+    !confirm(
+      "Are you sure you want to finish the speaking test?"
+    )
+  ){
+    return;
+  }
+
+  await finishSpeakingTest();
+
+}
+async function finishSpeakingTest(){
+
+  let passedLevels =
+    speakingResults
+      .filter(r => r.passed)
+      .map(r => r.targetLevel);
+
+  if(!passedLevels.length){
+
+    speakingLevel = "A1";
+
+  }else{
+
+    speakingLevel =
+      passedLevels[
+        passedLevels.length - 1
+      ];
+
+  }
+
+  const avg = field =>
+    Math.round(
+      speakingResults.reduce(
+        (sum,r)=>
+          sum + Number(r[field] || 0),
+        0
+      ) / speakingResults.length
+    );
+
+  speakingFluency =
+    avg("fluency");
+
+  speakingGrammar =
+    avg("grammar");
+
+  speakingVocabulary =
+    avg("vocabulary");
+
+  speakingPronunciation =
+    avg("pronunciation");
+
+  speakingTranscript =
+    speakingResults
+      .map((r,i)=>`
+Question ${i + 1} (${r.targetLevel}):
+${r.question}
+
+Answer:
+${r.transcript}
+`)
+      .join("\n----------------\n");
+
+  speakingFeedback =
+    speakingResults
+      .map((r,i)=>
+        `Q${i + 1} ${r.targetLevel}: ${r.feedback}`
+      )
+      .join("\n");
+
+  document
+    .getElementById("speakingResult")
+    .innerHTML = `
+
+<div class="result">
+
+<h2>
+Final Speaking Result
+</h2>
+
+<div class="final-level">
+${speakingLevel}
+</div>
+
+<div class="stats">
+
+<div class="stat-box">
+Fluency
+<br><br>
+${speakingFluency}
+</div>
+
+<div class="stat-box">
+Grammar
+<br><br>
+${speakingGrammar}
+</div>
+
+<div class="stat-box">
+Vocabulary
+<br><br>
+${speakingVocabulary}
+</div>
+
+<div class="stat-box">
+Pronunciation
+<br><br>
+${speakingPronunciation}
+</div>
+
+</div>
+
+<br>
+
+<div class="reading">
+${speakingFeedback}
+</div>
+
+</div>
+
+`;
+
+await saveSpeakingToFirebase();
+
+document
+  .getElementById("recordBtn")
+  .disabled = true;
+
+
+document
+  .querySelector(
+    'button[onclick="analyzeSpeakingAnswer()"]'
+  )
+  .disabled = true;
+
+document
+  .getElementById("recordBtn")
+  .style.display = "none";
+
+document
+  .querySelector(
+    'button[onclick="stopRecording()"]'
+  )
+  .style.display = "none";
+
+}
+
+async function uploadSpeakingAudio(blob){
+
+  const form =
+    new FormData();
+
+  form.append(
+    "file",
+    blob
+  );
+
+  form.append(
+    "upload_preset",
+    "kcgfhigd"
+  );
+
+  const res =
+    await fetch(
+      "https://api.cloudinary.com/v1_1/dgs6mo4hl/auto/upload",
+      {
+        method:"POST",
+        body:form
+      }
+    );
+
+  const data =
+    await res.json();
+
+  if(!data.secure_url){
+
+    throw new Error(
+      "Cloudinary upload failed"
+    );
+
+  }
+
+  return data.secure_url;
+
+}
+async function saveSpeakingToFirebase(){
+
+  const studentID =
+    document
+      .getElementById("studentID")
+      .value
+      .trim();
+
+  if(!studentID){
+    alert("Student ID not found.");
+    return;
+  }
+
+  const snap =
+    await db
+      .collection("cefr_results")
+      .where("studentID","==",studentID)
+      .limit(1)
+      .get();
+
+  if(snap.empty){
+    alert("Writing result not found. Please submit writing first.");
+    return;
+  }
+
+  const current =
+    snap.docs[0].data();
+let audioURL = "";
+
+if(currentAudioBlob){
+
+  audioURL =
+    await uploadSpeakingAudio(
+      currentAudioBlob
+    );
+
+}
+
+const testLevel =
+  getCEFRFromPlacement(
+    current.placementLevel
+  );
+
+const aiFinalResult =
+  await calculateAIFinalCEFR({
+    testLevel,
+    placementLevel: current.placementLevel,
+    stats: current.stats || finalStats,
+    writing: {
+      level: current.writingLevel || "",
+      score: current.writingScore || 0,
+      grammar: current.writingGrammar || 0,
+      vocabulary: current.writingVocabulary || 0,
+      coherence: current.writingCoherence || 0,
+      taskAchievement: current.writingTaskAchievement || 0,
+      feedback: current.writingFeedback || "",
+      text: current.writingText || ""
+    },
+    speaking: {
+      level: speakingLevel || "",
+      fluency: speakingFluency || 0,
+      grammar: speakingGrammar || 0,
+      vocabulary: speakingVocabulary || 0,
+      pronunciation: speakingPronunciation || 0,
+      feedback: speakingFeedback || "",
+      transcript: speakingTranscript || "",
+      questions: speakingResults || []
+    }
+  });
+
+const finalCEFR =
+  aiFinalResult.finalCEFR;
+
+const finalPlacementLevel =
+  finalCEFR === testLevel
+    ? current.placementLevel
+    : getPlacementLevel(finalCEFR);
+  console.log(
+    "Transcript Length:",
+    speakingTranscript?.length
+  );
+
+  console.log(
+    "Questions Length:",
+    JSON.stringify(speakingResults).length
+  );
+
+await db
+  .collection("cefr_results")
+.doc(studentID)
+.update({
+    speakingLevel:
+      speakingLevel || "",
+
+    speakingFluency:
+      speakingFluency || 0,
+
+    speakingGrammar:
+      speakingGrammar || 0,
+
+    speakingVocabulary:
+      speakingVocabulary || 0,
+
+    speakingPronunciation:
+      speakingPronunciation || 0,
+
+    speakingFeedback:
+      speakingFeedback || "",
+
+    speakingTranscript:
+      speakingTranscript || "",
+
+    speakingAudio:
+      audioURL || "",
+
+    speakingQuestions:
+      speakingResults.map(r=>({
+
+        targetLevel:
+          r.targetLevel || "",
+
+        question:
+          r.question || "",
+
+        transcript:
+          r.transcript || "",
+
+        level:
+          r.level || "",
+
+        score:
+          r.score || 0,
+
+        fluency:
+          r.fluency || 0,
+
+        grammar:
+          r.grammar || 0,
+
+        vocabulary:
+          r.vocabulary || 0,
+
+        pronunciation:
+          r.pronunciation || 0,
+
+        feedback:
+          r.feedback || ""
+
+      })),
+
+    finalCEFR:
+      finalCEFR,
+
+    aiFinalCEFR:
+      aiFinalResult.finalCEFR,
+
+    aiFinalConfidence:
+      aiFinalResult.confidence,
+
+    aiFinalReason:
+      aiFinalResult.reason,
+
+    aiFinalStrengths:
+      aiFinalResult.strengths,
+
+    aiFinalLimitations:
+      aiFinalResult.limitations,
+
+    aiFinalSource:
+      aiFinalResult.source,
+
+    aiFinalReviewedAt:
+      firebase.firestore.FieldValue.serverTimestamp(),
+
+    finalPlacementLevel:
+      finalPlacementLevel,
+finalLevel:
+finalPlacementLevel
+  });
+  const progress =
+    JSON.parse(
+      localStorage.getItem(
+        "cefr_progress_" + studentID
+      )
+    );
+
+  if(progress){
+    progress.speakingCompleted = true;
+    progress.currentStage = "finished";
+
+    localStorage.setItem(
+      "cefr_progress_" + studentID,
+      JSON.stringify(progress)
+    );
+  }
+
+  alert("Speaking assessment saved successfully.");
+
+}
+function blobToBase64(blob){
+
+  return new Promise(
+    (resolve,reject)=>{
+
+      const reader =
+        new FileReader();
+
+      reader.onloadend =
+        function(){
+
+          resolve(
+            reader.result
+              .split(",")[1]
+          );
+
+        };
+
+      reader.onerror =
+        reject;
+
+      reader.readAsDataURL(blob);
+
+    }
+  );
+
+}
+async function transcribeSpeakingAudio(blob){
+
+  const base64Audio =
+    await blobToBase64(blob);
+
+  const response =
+    await fetch(
+      "https://muddy-frost-dfd0.abbassaboali.workers.dev/",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          audio: base64Audio,
+          mimeType: "audio/webm"
+        })
+      }
+    );
+
+  const data = await response.json();
+
+  if(!response.ok){
+    throw new Error(
+      data.error || "Audio transcription failed"
+    );
+  }
+
+  return (
+    data?.candidates?.[0]
+      ?.content?.parts?.[0]
+      ?.text || ""
+  );
+
+}
+</script>
+<script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+
+
+</body>
+</html>
