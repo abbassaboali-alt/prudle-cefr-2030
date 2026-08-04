@@ -4157,52 +4157,34 @@ async function calculateAIFinalCEFR({
   writing,
   speaking
 }){
-  const fallbackLevel = calculateFinalCEFR(
-    testLevel,
-    writing?.level,
-    speaking?.level
-  );
+  const validLevels = [
+    "A1", "A2", "B1", "B2", "C1", "C2"
+  ];
 
-  const prompt = `
-You are a senior CEFR placement examiner.
+  const normalizeLevel = value => {
+    const match = String(value || "")
+      .toUpperCase()
+      .match(/\b(A1|A2|B1|B2|C1|C2)\b/);
 
-Determine ONE final CEFR level by reviewing ALL available evidence together.
-Do not simply choose the lowest component automatically. Use professional judgement,
-but remain conservative when evidence is inconsistent or incomplete.
+    return match ? match[1] : "";
+  };
 
-Valid levels only: A1, A2, B1, B2, C1, C2.
+  const normalizedTest =
+    normalizeLevel(testLevel) ||
+    normalizeLevel(getCEFRFromPlacement(placementLevel));
 
-Evidence:
-1. Adaptive placement test CEFR: ${testLevel || "Not available"}
-2. Placement course level: ${placementLevel || "Not available"}
-3. Placement test statistics by level and section:
-${JSON.stringify(stats || {}, null, 2)}
+  const normalizedWriting =
+    normalizeLevel(writing?.level);
 
-4. Writing assessment:
-${JSON.stringify(writing || {}, null, 2)}
+  const normalizedSpeaking =
+    normalizeLevel(speaking?.level);
 
-5. Speaking assessment:
-${JSON.stringify(speaking || {}, null, 2)}
-
-Decision rules:
-- Consider grammar, vocabulary, reading, listening, writing, fluency, pronunciation, coherence, and task achievement.
-- Give more weight to consistent evidence across multiple skills.
-- A single weak or unusually strong component should not control the whole result without supporting evidence.
-- When evidence is borderline, choose the lower defensible CEFR level.
-- Never return a level outside A1-C2.
-- Explain the main evidence briefly.
-
-Return ONLY valid JSON in this exact structure:
-{
-  "finalCEFR": "A1",
-  "confidence": 0,
-  "reason": "",
-  "strengths": [],
-  "limitations": []
-}
-
-Confidence must be an integer from 0 to 100.
-`;
+  const fallbackResult = calculateWeightedFinalCEFR({
+    testLevel: normalizedTest,
+    writingLevel: normalizedWriting,
+    speakingLevel: normalizedSpeaking,
+    placementLevel
+  });
 
   try{
     const response = await fetch(
@@ -4213,78 +4195,331 @@ Confidence must be an integer from 0 to 100.
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          task: "generic_ai",
-          text: prompt,
-          json: true,
-          temperature: 0.1
+          task: "ai_final_cefr",
+
+          name:
+            document.getElementById("studentName")?.value?.trim() || "",
+
+          studentID:
+            document.getElementById("studentID")?.value?.trim() || "",
+
+          placementCEFR: normalizedTest,
+          placementLevel: placementLevel || "",
+          finalStats: stats || {},
+
+          writingLevel: normalizedWriting,
+          writingScore: Number(writing?.score) || 0,
+          writingGrammar: Number(writing?.grammar) || 0,
+          writingVocabulary: Number(writing?.vocabulary) || 0,
+          writingCoherence: Number(writing?.coherence) || 0,
+          writingOrganization: Number(writing?.organization) || 0,
+          writingTaskAchievement:
+            Number(writing?.taskAchievement) || 0,
+          writingFeedback: writing?.feedback || "",
+          writingText: writing?.text || "",
+
+          speakingLevel: normalizedSpeaking,
+          speakingScore: Number(speaking?.score) || 0,
+          speakingFluency: Number(speaking?.fluency) || 0,
+          speakingGrammar: Number(speaking?.grammar) || 0,
+          speakingVocabulary: Number(speaking?.vocabulary) || 0,
+          speakingPronunciation:
+            Number(speaking?.pronunciation) || 0,
+          speakingFeedback: speaking?.feedback || "",
+          speakingTranscript: speaking?.transcript || "",
+          speakingResults: speaking?.questions || []
         })
       }
     );
 
     const data = await response.json();
 
-    if(!response.ok){
+    if(!response.ok || data?.success === false){
       throw new Error(
         data?.error ||
-        "AI final CEFR evaluation failed."
+        "AI Final CEFR request failed."
       );
     }
 
-    const parsed = JSON.parse(
-      cleanAIJSON(extractAIText(data))
+    const result =
+      data?.result && typeof data.result === "object"
+        ? data.result
+        : data;
+
+    const finalCEFR = normalizeLevel(
+      result?.aiFinalCEFR ||
+      result?.finalCEFR
     );
-
-    const validLevels = [
-      "A1", "A2", "B1", "B2", "C1", "C2"
-    ];
-
-    const finalCEFR = String(
-      parsed?.finalCEFR || ""
-    ).toUpperCase();
 
     if(!validLevels.includes(finalCEFR)){
       throw new Error(
-        "AI returned an invalid CEFR level."
+        "AI returned an invalid final CEFR."
       );
     }
 
+    const confidence = Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(
+          Number(
+            result?.aiFinalConfidence ??
+            result?.confidence
+          ) || 0
+        )
+      )
+    );
+
+    const finalPlacementLevel =
+      validateFinalPlacementLevel(
+        result?.finalPlacementLevel ||
+        result?.finalLevel,
+        finalCEFR
+      ) ||
+      choosePrudleLevel({
+        finalCEFR,
+        confidence,
+        testLevel: normalizedTest,
+        writingLevel: normalizedWriting,
+        speakingLevel: normalizedSpeaking,
+        placementLevel
+      });
+
     return {
       finalCEFR,
-      confidence: Math.max(
-        0,
-        Math.min(
-          100,
-          Math.round(Number(parsed?.confidence) || 0)
-        )
-      ),
-      reason: String(parsed?.reason || "").trim(),
-      strengths: Array.isArray(parsed?.strengths)
-        ? parsed.strengths
-        : [],
-      limitations: Array.isArray(parsed?.limitations)
-        ? parsed.limitations
-        : [],
-      source: "ai"
+      finalPlacementLevel,
+      confidence,
+
+      reason: String(
+        result?.aiFinalReason ||
+        result?.reason ||
+        ""
+      ).trim(),
+
+      strengths:
+        Array.isArray(result?.aiFinalStrengths)
+          ? result.aiFinalStrengths
+          : Array.isArray(result?.strengths)
+            ? result.strengths
+            : [],
+
+      limitations:
+        Array.isArray(result?.aiFinalLimitations)
+          ? result.aiFinalLimitations
+          : Array.isArray(result?.limitations)
+            ? result.limitations
+            : [],
+
+      source:
+        result?.aiFinalSource ||
+        "OpenAI holistic CEFR review",
+
+      recommendedAction:
+        result?.recommendedAction || "",
+
+      fallbackUsed: false
     };
 
   }catch(error){
     console.error(
-      "AI Final CEFR fallback:",
+      "AI Final CEFR failed:",
       error
     );
 
     return {
-      finalCEFR: fallbackLevel,
-      confidence: 0,
+      ...fallbackResult,
+
       reason:
-        "AI review was unavailable, so the system used the existing conservative CEFR rule.",
+        "The AI review was unavailable. The system used a weighted CEFR calculation that considers placement, writing, and speaking instead of automatically selecting the lowest result.",
+
       strengths: [],
+
       limitations: [
-        error?.message || "AI evaluation unavailable"
+        error?.message ||
+        "AI review unavailable."
       ],
-      source: "fallback"
+
+      source:
+        "Weighted fallback",
+
+      recommendedAction:
+        "Review manually when component results are strongly inconsistent.",
+
+      fallbackUsed: true
     };
   }
+}
+
+function calculateWeightedFinalCEFR({
+  testLevel,
+  writingLevel,
+  speakingLevel,
+  placementLevel
+}){
+  const levels = [
+    "A1", "A2", "B1", "B2", "C1", "C2"
+  ];
+
+  const evidence = [];
+
+  function addEvidence(level, weight){
+    const index = levels.indexOf(level);
+
+    if(index !== -1){
+      evidence.push({
+        level,
+        index,
+        weight
+      });
+    }
+  }
+
+  addEvidence(testLevel, 0.40);
+  addEvidence(writingLevel, 0.30);
+  addEvidence(speakingLevel, 0.30);
+
+  if(!evidence.length){
+    return {
+      finalCEFR: "A1",
+      finalPlacementLevel: "Level 1",
+      confidence: 20
+    };
+  }
+
+  const totalWeight = evidence.reduce(
+    (sum, item) => sum + item.weight,
+    0
+  );
+
+  const weightedIndex = evidence.reduce(
+    (sum, item) => sum + item.index * item.weight,
+    0
+  ) / totalWeight;
+
+  // Conservative weighted decision without forcing the lowest component.
+  const finalIndex = Math.max(
+    0,
+    Math.min(
+      levels.length - 1,
+      Math.floor(weightedIndex + 0.15)
+    )
+  );
+
+  const finalCEFR = levels[finalIndex];
+
+  const spread =
+    Math.max(...evidence.map(item => item.index)) -
+    Math.min(...evidence.map(item => item.index));
+
+  const confidence =
+    evidence.length === 3
+      ? spread === 0
+        ? 88
+        : spread === 1
+          ? 76
+          : 64
+      : evidence.length === 2
+        ? spread === 0
+          ? 72
+          : 58
+        : 40;
+
+  return {
+    finalCEFR,
+
+    finalPlacementLevel:
+      choosePrudleLevel({
+        finalCEFR,
+        confidence,
+        testLevel,
+        writingLevel,
+        speakingLevel,
+        placementLevel
+      }),
+
+    confidence
+  };
+}
+
+function choosePrudleLevel({
+  finalCEFR,
+  confidence,
+  testLevel,
+  writingLevel,
+  speakingLevel,
+  placementLevel
+}){
+  const map = {
+    A1: ["Level 1", "Level 2"],
+    A2: ["Level 3", "Level 4"],
+    B1: ["Level 5", "Level 6"],
+    B2: ["Level 7", "Level 8"],
+    C1: ["Level 9", "Level 10"],
+    C2: ["Level 11", "Level 12"]
+  };
+
+  const band = map[finalCEFR] || map.A1;
+  const levels = ["A1", "A2", "B1", "B2", "C1", "C2"];
+  const finalIndex = levels.indexOf(finalCEFR);
+
+  const normalizedPlacement = String(
+    placementLevel || ""
+  ).trim();
+
+  if(
+    testLevel === finalCEFR &&
+    band.includes(normalizedPlacement) &&
+    Number(confidence) >= 65
+  ){
+    return normalizedPlacement;
+  }
+
+  const supportingSkills = [
+    testLevel,
+    writingLevel,
+    speakingLevel
+  ].filter(level => {
+    const index = levels.indexOf(level);
+
+    return (
+      index !== -1 &&
+      index >= finalIndex
+    );
+  }).length;
+
+  const strongWithinBand =
+    supportingSkills >= 2 ||
+    Number(confidence) >= 70;
+
+  return strongWithinBand
+    ? band[1]
+    : band[0];
+}
+
+function validateFinalPlacementLevel(
+  placementLevel,
+  finalCEFR
+){
+  const map = {
+    A1: ["Level 1", "Level 2"],
+    A2: ["Level 3", "Level 4"],
+    B1: ["Level 5", "Level 6"],
+    B2: ["Level 7", "Level 8"],
+    C1: ["Level 9", "Level 10"],
+    C2: ["Level 11", "Level 12"]
+  };
+
+  const match = String(
+    placementLevel || ""
+  ).match(/(?:LEVEL\s*)?(1[0-2]|[1-9])\b/i);
+
+  const normalized = match
+    ? `Level ${Number(match[1])}`
+    : "";
+
+  return map[finalCEFR]?.includes(normalized)
+    ? normalized
+    : "";
 }
 
 function getPlacementLevel(
@@ -5555,9 +5790,15 @@ const finalCEFR =
   aiFinalResult.finalCEFR;
 
 const finalPlacementLevel =
-  finalCEFR === testLevel
-    ? current.placementLevel
-    : getPlacementLevel(finalCEFR);
+  aiFinalResult.finalPlacementLevel ||
+  choosePrudleLevel({
+    finalCEFR,
+    confidence: aiFinalResult.confidence,
+    testLevel,
+    writingLevel: current.writingLevel || "",
+    speakingLevel: speakingLevel || "",
+    placementLevel: current.placementLevel || ""
+  });
   console.log(
     "Transcript Length:",
     speakingTranscript?.length
@@ -5651,6 +5892,12 @@ await db
 
     aiFinalSource:
       aiFinalResult.source,
+
+    aiFinalRecommendedAction:
+      aiFinalResult.recommendedAction || "",
+
+    aiFinalFallbackUsed:
+      aiFinalResult.fallbackUsed === true,
 
     aiFinalReviewedAt:
       firebase.firestore.FieldValue.serverTimestamp(),
