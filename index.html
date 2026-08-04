@@ -3958,44 +3958,8 @@ async function evaluateWritingAI(
   topic,
   targetLevel
 ){
-
-  const prompt = `
-You are a professional CEFR writing examiner.
-
-Evaluate the student's writing according to the target CEFR level and the assigned topic.
-
-Return ONLY JSON:
-
-{
-"level":"",
-"score":0,
-"grammar":0,
-"vocabulary":0,
-"coherence":0,
-"taskAchievement":0,
-"feedback":""
-}
-
-Rules:
-- Check if the student answered the assigned topic.
-- If the answer is off-topic, reduce the score strongly.
-- Evaluate grammar, vocabulary, coherence, and task achievement.
-- The level must be A1, A2, B1, B2, C1, or C2.
-- Be strict but fair.
-
-Target CEFR Level:
-${targetLevel}
-
-Writing Topic:
-${topic}
-
-Student Writing:
-${text}
-`;
-
-const response =
-  await fetch(
-    "https://muddy-frost-dfd0.abbassaboali.workers.dev/",
+  const response = await fetch(
+    "https://prudle-openai.abbassaboali.workers.dev/",
     {
       method:"POST",
 
@@ -4004,100 +3968,151 @@ const response =
       },
 
       body:JSON.stringify({
-        text: prompt
-      })
-    }
-  );
-
-const data =
-  await response.json();
-
-if(!response.ok){
-  throw new Error(
-    data.error ||
-    "Writing evaluation failed"
-  );
-}
-
-let resultText =
-  data.candidates?.[0]
-    ?.content?.parts?.[0]
-    ?.text
-    ?.trim();
-
-if(!resultText){
-  console.log("WORKER RESPONSE:", data);
-  throw new Error("No text returned from Worker/Gemini. Check Worker code or API key.");
-}
-
-resultText =
-  resultText
-    .replace(/```json/g,"")
-    .replace(/```/g,"")
-    .trim();
-
-return JSON.parse(resultText);
-}
-async function extractTextWithAI(file){
-
-  const imageBase64 = await imageToBase64(file);
-  const base64Data = imageBase64.split(",")[1];
-
-  if(!base64Data){
-    throw new Error("Failed to convert image to base64.");
-  }
-
-  const mimeType = file.type || "image/jpeg";
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: "Read all handwritten or printed English text from this image. Return only the extracted text. If unreadable, return IMAGE_NOT_READABLE."
-              },
-              {
-                inline_data: {
-                  mime_type: mimeType,
-                  data: base64Data
-                }
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0
-        }
+        task:"evaluate_writing",
+        text,
+        topic,
+        targetLevel
       })
     }
   );
 
   const data = await response.json();
 
-  console.log("Gemini image response:", data);
-
-  if(!response.ok){
+  if(
+    !response.ok ||
+    data.success === false
+  ){
     throw new Error(
-      data.error?.message || "Gemini Image Error"
+      data.error ||
+      "Writing evaluation failed"
+    );
+  }
+
+  const result =
+    data.result &&
+    typeof data.result === "object"
+      ? data.result
+      : data;
+
+  return {
+    level:
+      result.level || "A1",
+
+    score:
+      Number(result.score) || 0,
+
+    grammar:
+      Number(
+        result.grammar ??
+        result.grammarScore
+      ) || 0,
+
+    vocabulary:
+      Number(
+        result.vocabulary ??
+        result.vocabularyScore
+      ) || 0,
+
+    coherence:
+      Number(
+        result.coherence ??
+        result.organizationScore
+      ) || 0,
+
+    taskAchievement:
+      Number(
+        result.taskAchievement ??
+        result.taskAchievementScore
+      ) || 0,
+
+    feedback:
+      result.feedback ||
+      result.overallFeedback ||
+      ""
+  };
+}
+
+async function extractTextWithAI(file){
+
+  const imageBase64 =
+    await imageToBase64(file);
+
+  const base64Data =
+    imageBase64.split(",")[1];
+
+  if(!base64Data){
+    throw new Error(
+      "Failed to convert image to Base64."
+    );
+  }
+
+  const mimeType =
+    file.type ||
+    "image/jpeg";
+
+  const response = await fetch(
+    "https://prudle-openai.abbassaboali.workers.dev/",
+    {
+      method:
+        "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+
+      body:
+        JSON.stringify({
+          task:
+            "image_ocr",
+
+          image:
+            base64Data,
+
+          mimeType,
+
+          filename:
+            file.name ||
+            "writing-image.jpg"
+        })
+    }
+  );
+
+  const data =
+    await response.json();
+
+  if(
+    !response.ok ||
+    data.success === false
+  ){
+    throw new Error(
+      data.error ||
+      "OpenAI image reading failed."
     );
   }
 
   const extractedText =
-    data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    String(
+      data.extractedText ||
+      data.text ||
+      data.output_text ||
+      ""
+    ).trim();
 
-  if(!extractedText || extractedText.includes("IMAGE_NOT_READABLE")){
-    throw new Error("The image could not be read. Please upload a clearer image.");
+  if(
+    !extractedText ||
+    extractedText.includes(
+      "IMAGE_NOT_READABLE"
+    )
+  ){
+    throw new Error(
+      "The image could not be read. Please upload a clearer image."
+    );
   }
 
   return extractedText;
 }
+
 function calculateFinalCEFR(
   testLevel,
   writingLevel,
