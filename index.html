@@ -530,7 +530,7 @@ Start Recording Answer
 
 <br><br>
 
-<button onclick="stopRecording()">
+<button id="stopRecordBtn" onclick="stopRecording()">
 Stop Recording
 </button>
 <br><br>
@@ -547,7 +547,7 @@ Stop Recording
 
 <br><br>
 
-<button onclick="analyzeSpeakingAnswer()">
+<button id="analyzeSpeakingBtn" onclick="analyzeSpeakingAnswer()" disabled>
 Analyze This Answer
 </button>
 <br><br>
@@ -667,6 +667,8 @@ let currentTranscript = "";
  
 let recordingTimerInterval = null;
 let recordingSeconds = 0;
+let recordingStream = null;
+let recordingReady = false;
 const SPEAKING_LEVELS = [
   "A1",
   "A2",
@@ -4941,6 +4943,9 @@ async function startRecording(){
   audioChunks = [];
   currentAudioBlob = null;
   currentTranscript = "";
+  recordingReady = false;
+  const analyzeBtn = document.getElementById("analyzeSpeakingBtn");
+  if(analyzeBtn) analyzeBtn.disabled = true;
 
   const recordBtn =
     document.getElementById("recordBtn");
@@ -4964,6 +4969,8 @@ async function startRecording(){
       await navigator.mediaDevices.getUserMedia({
         audio:true
       });
+
+    recordingStream = stream;
 
     recordBtn.style.background = "#dc2626";
     recordBtn.innerText = "Recording...";
@@ -5006,14 +5013,20 @@ async function startRecording(){
       function(){
 
         clearInterval(recordingTimerInterval);
+        recordingTimerInterval = null;
 
         recordBtn.style.background = "#164478";
         recordBtn.innerText = "Start Recording Answer";
+        recordBtn.disabled = false;
 
         currentAudioBlob =
           new Blob(audioChunks,{
             type:"audio/webm"
           });
+
+        recordingReady = currentAudioBlob.size > 0;
+        const analyzeBtn = document.getElementById("analyzeSpeakingBtn");
+        if(analyzeBtn) analyzeBtn.disabled = !recordingReady;
 
         const audioUrl =
           URL.createObjectURL(currentAudioBlob);
@@ -5042,6 +5055,7 @@ async function startRecording(){
         stream.getTracks().forEach(
           track => track.stop()
         );
+        recordingStream = null;
 
       };
 
@@ -5065,16 +5079,32 @@ async function startRecording(){
 }
 function stopRecording(){
 
+  // Stop the visible timer immediately when the user presses Stop.
+  if(recordingTimerInterval){
+    clearInterval(recordingTimerInterval);
+    recordingTimerInterval = null;
+  }
+
+  const recordTimer = document.getElementById("recordTimer");
+  if(recordTimer){
+    recordTimer.style.display = "block";
+  }
+
   if(
     mediaRecorder &&
     mediaRecorder.state === "recording"
   ){
+    mediaRecorder.requestData();
     mediaRecorder.stop();
+
+    const recordBtn = document.getElementById("recordBtn");
+    if(recordBtn){
+      recordBtn.disabled = true;
+      recordBtn.innerText = "Preparing Audio...";
+    }
   }else{
     alert("No recording is running.");
   }
-
-
 }
 
 async function evaluateSpeakingAnswerAI(
@@ -5159,8 +5189,8 @@ async function analyzeSpeakingAnswer(){
     return;
   }
 
-  if(!currentAudioBlob){
-    alert("Please record your answer first.");
+  if(!currentAudioBlob || !recordingReady){
+    alert("Please stop the recording and wait until the audio is ready.");
     return;
   }
 
@@ -5681,14 +5711,13 @@ finalLevel:finalPlacementLevel,
     speakingCompleted:true,
     assessmentCompleted:true
   });
+  // Do not reveal Final CEFR or Final Level to the candidate.
+  // They are saved in Firebase and displayed only on the reports page.
   document.getElementById("result").innerHTML = `
     <div class="result">
-      <h2>Final Placement Result</h2>
-      <div>Final CEFR</div>
-      <div class="final-level">${finalCEFR}</div>
-      <div class="stat-box" style="margin-top:12px;">
-        Final Level<br><br>${finalPlacementLevel}
-      </div>
+      <h2>Assessment Completed</h2>
+      <p>Your responses have been submitted successfully.</p>
+      <p>The placement result will be available through the institute.</p>
     </div>
   `;
 
