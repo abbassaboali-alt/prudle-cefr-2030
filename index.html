@@ -3656,198 +3656,78 @@ function getCEFRFromPlacement(level){
 ============================== */
 
 async function showResult(level){
-clearProgress(
-  document.getElementById("studentID").value.trim()
-);
-currentPlacementLevel = level;
+  currentPlacementLevel = level;
 
-  document
-    .getElementById("testBox")
-    .style.display =
-    "none";
+  document.getElementById("testBox").style.display = "none";
+  document.getElementById("submitArea").style.display = "none";
+  document.getElementById("submitBtn").style.display = "none";
 
-  document
-    .getElementById("submitBtn")
-    .style.display =
-    "none";
+  // لا تظهر نتيجة المرحلة الأولى أو النتيجة النهائية قبل إكمال جميع المراحل.
+  document.getElementById("result").innerHTML = "";
 
-  let html = `
+  const placementCEFR = getCEFRFromPlacement(level);
+  const writingTopic = WRITING_TOPICS[placementCEFR];
 
-    <div class="result">
+  document.getElementById("writingText").placeholder = writingTopic;
 
-      <div>
-        Final CEFR Level
-      </div>
+  const oldTopic = document.getElementById("writingTopicBox");
+  if(oldTopic){ oldTopic.remove(); }
 
-<div class="final-level" style="display:none">
-  ${level}
-</div>
-      <hr>
-
-      <div class="stats">
-
-  `;
-
-  Object.keys(finalStats)
-    .forEach(l=>{
-
-      html += `
-
-        <div class="stat-box">
-
-          ${l}
-
-          <br><br>
-
-          ${finalStats[l].correct}
-          /
-          ${finalStats[l].total}
-
-          <br><br>
-
-          ${finalStats[l].percent}%
-
-        </div>
-
-      `;
-
-    });
-
-  html += `
-
-      </div>
-
-    </div>
-
-  `;
-document
-  .getElementById("result")
-  .innerHTML = html;
-
-const placementCEFR =
-  getCEFRFromPlacement(level);
-
-const writingTopic =
-  WRITING_TOPICS[placementCEFR];
-
-document
-  .getElementById("writingText")
-  .placeholder =
-  writingTopic;
-
-const oldTopic =
-  document.getElementById(
-    "writingTopicBox"
-  );
-
-if(oldTopic){
-  oldTopic.remove();
-}
-
-document
-  .getElementById("writingBox")
-  .insertAdjacentHTML(
+  document.getElementById("writingBox").insertAdjacentHTML(
     "afterbegin",
     `
     <div class="reading" id="writingTopicBox">
-      <b>Writing Topic (${placementCEFR}):</b>
-      <br>
+      <b>Writing Topic (${placementCEFR}):</b><br>
       ${writingTopic}
     </div>
     `
   );
-const studentProgress = {
-currentStage: "writing",
-placementDone: true,
-writingCompleted: false,
-speakingCompleted: false,
-speakingStartLevel:
-  placementCEFR,
 
-  studentName:
-    document.getElementById("studentName").value,
+  const studentProgress = {
+    currentStage:"writing",
+    placementDone:true,
+    writingCompleted:false,
+    speakingCompleted:false,
+    speakingStartLevel:placementCEFR,
+    studentName:document.getElementById("studentName").value,
+    studentPhone:document.getElementById("studentPhone").value,
+    studentID:document.getElementById("studentID").value,
+    level:placementCEFR,
+    writingTopic,
+    placementLevel:level,
+    finalLevel:"",
+    finalStats
+  };
 
-  studentPhone:
-    document.getElementById("studentPhone").value,
+  await saveProgress(studentProgress);
 
-  studentID:
-    document.getElementById("studentID").value,
+  await db.collection("cefr_results").doc(studentProgress.studentID).set({
+    name:studentProgress.studentName,
+    phone:studentProgress.studentPhone,
+    studentID:studentProgress.studentID,
+    level:placementCEFR,
+    placementLevel:level,
+    writingLevel:"",
+    speakingLevel:"",
+    finalCEFR:"",
+    finalLevel:"",
+    finalPlacementLevel:"",
+    stats:finalStats,
+    testCompleted:true,
+    writingCompleted:false,
+    speakingCompleted:false,
+    assessmentCompleted:false,
+    date:new Date().toLocaleString(),
+    timestamp:Date.now()
+  });
 
-level:
-  placementCEFR,
+  const writingBox = document.getElementById("writingBox");
+  writingBox.style.display = "block";
 
-writingTopic:
-  writingTopic,
-  placementLevel: level,
-
-  finalLevel: level,
-
-  finalStats: finalStats,
-
-  writingCompleted: false,
-
-  speakingCompleted: false
-
-};
-await saveProgress(studentProgress);
-
-await db
-  .collection("cefr_results")
-  .doc(
-    studentProgress.studentID
-  )
-  .set({
-  name:
-    studentProgress.studentName,
-
-  phone:
-    studentProgress.studentPhone,
-
-  studentID:
-    studentProgress.studentID,
-
-  level:
-    placementCEFR,
-
-  placementLevel:
-    level,
-
-  writingLevel:
-    "",
-
-  speakingLevel:
-    "",
-
-  finalCEFR:
-    placementCEFR,
-
-  finalLevel:
-    level,
-
-  stats:
-    finalStats,
-
-  testCompleted:
-    true,
-
-  writingCompleted:
-    false,
-
-  speakingCompleted:
-    false,
-
-  date:
-    new Date()
-      .toLocaleString(),
-
-  timestamp:
-    Date.now()
-
-});
-document
-  .getElementById("writingBox")
-  .style.display = "block";
-
+  // الانتقال المباشر إلى بداية اختبار الكتابة.
+  requestAnimationFrame(()=>{
+    writingBox.scrollIntoView({behavior:"smooth", block:"start"});
+  });
 }
 
 document
@@ -4197,9 +4077,9 @@ async function calculateAIFinalCEFR({
   const prompt = `
 You are a senior CEFR placement examiner.
 
-Determine ONE final CEFR level by reviewing ALL available evidence together.
-Do not simply choose the lowest component automatically. Use professional judgement,
-but remain conservative when evidence is inconsistent or incomplete.
+Review ALL available evidence and explain the official final CEFR decision.
+The official institute rule is mandatory: the final CEFR is the lowest valid level
+among the placement test, writing, and speaking. Do not override or raise this result.
 
 Valid levels only: A1, A2, B1, B2, C1, C2.
 
@@ -4218,8 +4098,8 @@ ${JSON.stringify(speaking || {}, null, 2)}
 Decision rules:
 - Consider grammar, vocabulary, reading, listening, writing, fluency, pronunciation, coherence, and task achievement.
 - Give more weight to consistent evidence across multiple skills.
-- A single weak or unusually strong component should not control the whole result without supporting evidence.
-- When evidence is borderline, choose the lower defensible CEFR level.
+- Apply the mandatory lowest-component rule exactly.
+- Use the detailed evidence only to explain the decision clearly.
 - Never return a level outside A1-C2.
 - Explain the main evidence briefly.
 
@@ -4269,15 +4149,20 @@ Confidence must be an integer from 0 to 100.
       "A1", "A2", "B1", "B2", "C1", "C2"
     ];
 
-    const finalCEFR = String(
+    const aiSuggestedCEFR = String(
       parsed?.finalCEFR || ""
     ).toUpperCase();
 
-    if(!validLevels.includes(finalCEFR)){
+    if(!validLevels.includes(aiSuggestedCEFR)){
       throw new Error(
         "AI returned an invalid CEFR level."
       );
     }
+
+    // The final result must always follow the institute's conservative rule:
+    // Final CEFR = the lowest valid level among test, writing and speaking.
+    // AI may explain the evidence, but it cannot raise the final level.
+    const finalCEFR = fallbackLevel;
 
     return {
       finalCEFR,
@@ -4318,35 +4203,20 @@ Confidence must be an integer from 0 to 100.
   }
 }
 
-function getPlacementLevel(
-  cefr
-){
+function getPlacementLevel(cefr){
+  // When the final CEFR is lower than the placement-test CEFR,
+  // place the student in the second course level of that CEFR band.
+  // Examples: A1 -> Level 2, A2 -> Level 4, B1 -> Level 6.
+  const finalLevelMap = {
+    A1: "Level 2",
+    A2: "Level 4",
+    B1: "Level 6",
+    B2: "Level 8",
+    C1: "Level 10",
+    C2: "Level 12"
+  };
 
-  switch(cefr){
-
-    case "A1":
-      return "Level 1";
-
-    case "A2":
-      return "Level 3";
-
-    case "B1":
-      return "Level 5";
-
-    case "B2":
-      return "Level 7";
-
-    case "C1":
-      return "Level 9";
-
-    case "C2":
-      return "Level 11";
-
-    default:
-      return "-";
-
-  }
-
+  return finalLevelMap[cefr] || "-";
 }
 function imageToBase64(file){
   return new Promise((resolve, reject) => {
@@ -4609,47 +4479,9 @@ const result =
 writingScore =
   result.score;
 
-const placementLevel =
-  document
-    .querySelector(
-      "#result .final-level"
-    )
-    ?.innerText || "-";
+const placementLevel = currentPlacementLevel || progress?.placementLevel || "Level 1";
 
-const testLevel =
-  getCEFRFromPlacement(
-    placementLevel
-  );
-
-const finalCEFR =
-  calculateFinalCEFR(
-    testLevel,
-    result.level,
-    result.level
-  );
-
-const savedPlacementLevel =
-  currentPlacementLevel;
-const currentCEFR =
-  getCEFRFromPlacement(
-    savedPlacementLevel
-  );
-let finalPlacementLevel;
-
-if(
-  finalCEFR === currentCEFR
-){
-
-finalPlacementLevel =
-  savedPlacementLevel;
-}else{
-
-  finalPlacementLevel =
-    getPlacementLevel(
-      finalCEFR
-    );
-
-}
+const savedPlacementLevel = currentPlacementLevel || placementLevel;
 const oldDoc =
   await db
     .collection("cefr_results")
@@ -4687,13 +4519,10 @@ speakingTranscript:
 
 speakingAudio:
   oldData.speakingAudio || "",
-finalCEFR: finalCEFR,
-
-finalPlacementLevel:
-  finalPlacementLevel,
-
-finalLevel:
-  finalPlacementLevel,
+finalCEFR:"",
+finalPlacementLevel:"",
+finalLevel:"",
+assessmentCompleted:false,
 allowRetake:false,
   name:
     document
@@ -4736,6 +4565,9 @@ placementLevel:
   writingScore:
     result.score,
 
+  writingCompleted:true,
+  speakingCompleted:false,
+  assessmentCompleted:false,
   stats:finalStats,
 
   date:
@@ -4905,6 +4737,11 @@ document
   )
   .style.display =
   "block";
+
+const speakingBoxElement = document.getElementById("speakingBox");
+requestAnimationFrame(()=>{
+  speakingBoxElement.scrollIntoView({behavior:"smooth", block:"start"});
+});
 
 currentSpeakingIndex =
   SPEAKING_LEVELS.indexOf(
@@ -5839,9 +5676,24 @@ await db
 
     finalPlacementLevel:
       finalPlacementLevel,
-finalLevel:
-finalPlacementLevel
+finalLevel:finalPlacementLevel,
+    writingCompleted:true,
+    speakingCompleted:true,
+    assessmentCompleted:true
   });
+  document.getElementById("result").innerHTML = `
+    <div class="result">
+      <h2>Final Placement Result</h2>
+      <div>Final CEFR</div>
+      <div class="final-level">${finalCEFR}</div>
+      <div class="stat-box" style="margin-top:12px;">
+        Final Level<br><br>${finalPlacementLevel}
+      </div>
+    </div>
+  `;
+
+  document.getElementById("result").scrollIntoView({behavior:"smooth", block:"start"});
+
   const progress =
     JSON.parse(
       localStorage.getItem(
