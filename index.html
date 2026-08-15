@@ -223,6 +223,43 @@ button{
   }
 
 }
+
+.report-editor{
+  margin-top:18px;
+  padding:16px;
+  border:2px dashed #93c5fd;
+  border-radius:16px;
+  background:#f8fbff;
+  text-align:left;
+}
+.report-editor label{
+  display:block;
+  margin-bottom:8px;
+  color:#164478;
+  font-weight:900;
+}
+.report-editor textarea{
+  width:100%;
+  min-height:150px;
+  padding:13px;
+  border:2px solid #cfe0f3;
+  border-radius:12px;
+  background:white;
+  color:#1f2937;
+  line-height:1.6;
+  resize:vertical;
+}
+.report-editor .editor-note{
+  margin:8px 0 12px;
+  color:#64748b;
+  font-size:13px;
+  font-weight:700;
+}
+.report-editor .save-report-btn{
+  margin-top:10px;
+  background:#059669;
+}
+
 </style>
 <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
@@ -4386,6 +4423,80 @@ async function handleWritingFileUpload(event){
   }
 }
 
+
+function escapeHtmlForTextarea(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+
+async function saveWritingReportEdit(){
+  const studentID =
+    document.getElementById("studentID")?.value?.trim();
+
+  const editor =
+    document.getElementById("writingReportEditor");
+
+  if(!studentID || !editor){
+    alert("Writing report editor is not available.");
+    return;
+  }
+
+  const updatedFeedback = editor.value.trim();
+
+  try{
+    await db
+      .collection("cefr_results")
+      .doc(studentID)
+      .update({
+        writingFeedback:updatedFeedback,
+        writingReportManuallyEdited:true,
+        writingReportEditedAt:
+          firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+    alert("Writing report updated successfully.");
+  }catch(error){
+    console.error("Writing report update failed:",error);
+    alert("Could not update Writing report: " + error.message);
+  }
+}
+
+async function saveSpeakingReportEdit(){
+  const studentID =
+    document.getElementById("studentID")?.value?.trim();
+
+  const editor =
+    document.getElementById("speakingReportEditor");
+
+  if(!studentID || !editor){
+    alert("Speaking report editor is not available.");
+    return;
+  }
+
+  const updatedFeedback = editor.value.trim();
+
+  try{
+    await db
+      .collection("cefr_results")
+      .doc(studentID)
+      .update({
+        speakingFeedback:updatedFeedback,
+        speakingReportManuallyEdited:true,
+        speakingReportEditedAt:
+          firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+    speakingFeedback = updatedFeedback;
+
+    alert("Speaking report updated successfully.");
+  }catch(error){
+    console.error("Speaking report update failed:",error);
+    alert("Could not update Speaking report: " + error.message);
+  }
+}
+
 async function analyzeWriting(){
 const btn =
   document.querySelector(
@@ -4702,6 +4813,27 @@ ${result.coherence}
 
 <div class="reading">
 ${result.feedback}
+</div>
+
+<div class="report-editor">
+  <label for="writingReportEditor">
+    Editable Writing Report
+  </label>
+
+  <div class="editor-note">
+    You can revise the AI-generated Writing feedback before using it in the final report.
+    Editing this text does not change the student's scores or CEFR level.
+  </div>
+
+  <textarea id="writingReportEditor">${escapeHtmlForTextarea(result.feedback)}</textarea>
+
+  <button
+    type="button"
+    class="save-report-btn"
+    onclick="saveWritingReportEdit()"
+  >
+    Save Writing Report Changes
+  </button>
 </div>
 
 </div>
@@ -5551,6 +5683,27 @@ ${speakingPronunciation}
 
 <div class="reading">
 ${speakingFeedback}
+</div>
+
+<div class="report-editor">
+  <label for="speakingReportEditor">
+    Editable Speaking Report
+  </label>
+
+  <div class="editor-note">
+    You can revise the AI-generated Speaking feedback before using it in the final report.
+    Editing this text does not change the student's scores or CEFR level.
+  </div>
+
+  <textarea id="speakingReportEditor">${escapeHtmlForTextarea(speakingFeedback)}</textarea>
+
+  <button
+    type="button"
+    class="save-report-btn"
+    onclick="saveSpeakingReportEdit()"
+  >
+    Save Speaking Report Changes
+  </button>
 </div>
 
 </div>
